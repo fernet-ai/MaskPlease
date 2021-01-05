@@ -20,11 +20,14 @@
       "supportsTablet": true
     },
     "android": {
+    "googleServicesFile": "./google-services.json",
+    "useNextNotificationsApi": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#8d6cae"
       },
-      "package": "com.fernet.MaskPlease"
+
+      "package": "com.fernet.maskplease"
     },
     "web": {
       "favicon": "./assets/favicon.png"
