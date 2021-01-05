@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import {Button, Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import {Button, Image, StyleSheet, Text, View, Alert, TouchableOpacity } from 'react-native';
 import { Camera } from 'expo-camera';
 import { FontAwesome ,  MaterialIcons, AntDesign} from '@expo/vector-icons';
+import { EAzureBlobStorageImage } from 'react-native-azure-blob-storage';
+
 import logo from '../assets/logo.png';
 
 export default function PhotoScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.front);
+
+
+  useEffect(() => {
+      EAzureBlobStorageImage.configure(
+    "maskpleasestorage", //Account Name
+    "asBWW61XzSADiBm+ePs0R92ouRXReni5YoDLjvanrRTn2IZbmbtNvJUsv3BmmJF+9v+W0VHg7EsnKwtpzuy4ag==", //Account Key
+    "maskpleasecontainer" //Container Name
+  );
+  }, []);
+
 
   useEffect(() => {
     (async () => {
@@ -26,10 +38,21 @@ export default function PhotoScreen() {
 
 
 snap = async () => {
+
+  let options = { quality: 0.7};
+
   if (this.camera) {
-    let photo = await this.camera.takePictureAsync().then(data => {
+    let photo = await this.camera.takePictureAsync(options).then(data => {
                     console.log('data uri:' + data.uri);
-                    //saveImage(data.uri);
+                    EAzureBlobStorageImage.uploadFile(data.uri);
+                    Alert.alert(
+                      'Foto Scattato',
+                      'Ora invio al blob .. ',
+                      [
+                        { text: 'OK', onPress: () => console.log('OK Pressed') }
+                      ],
+                      { cancelable: false }
+                    );
                   });
   }
 };
