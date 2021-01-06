@@ -58,8 +58,18 @@ upload = async () => {
 
   var nomeFile = await EAzureBlobStorageImage.uploadFile(UriImg);
   console.log("Nome azure del file caricato: "+nomeFile);
-  setToken(nomeFile)
+  setToken(nomeFile);
+
+  let i = 0;
+  let finish = undefined;
+    do {
+      finish = await polling();
+      i++;
+    }
+    while (finish == 300 || i< 10);
+
 };
+
 
 
 polling = async () => {
@@ -78,6 +88,8 @@ polling = async () => {
 
     setNewUri(null); // Svuota la var dall'URI della foto già caricata
     setFetchMode(false);
+
+    return response.status;
 };
 
 
