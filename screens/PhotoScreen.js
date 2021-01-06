@@ -8,7 +8,10 @@ import logo from '../assets/logo.png';
 
 export default function PhotoScreen() {
   const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.front);
+  const [type, setType] = useState(Camera.Constants.Type.front)
+  const [UriImg, setNewUri] = useState(null);
+  const [token, setToken] = useState(null);
+  const [isFetching, setFetchMode] = useState(false);
 
 
   useEffect(() => {
@@ -38,25 +41,44 @@ export default function PhotoScreen() {
 
 
 snap = async () => {
-
   let options = { quality: 0.7};
-
   if (this.camera) {
     let photo = await this.camera.takePictureAsync(options).then(data => {
                     console.log('data uri:' + data.uri);
-                    EAzureBlobStorageImage.uploadFile(data.uri);
-                    Alert.alert(
-                      'Foto Scattato',
-                      'Ora invio al blob .. ',
-                      [
-                        { text: 'OK', onPress: () => console.log('OK Pressed') }
-                      ],
-                      { cancelable: false }
-                    );
+                    setNewUri(data.uri);
                   });
   }
 };
 
+
+
+upload = async () => {
+
+  setFetchMode(true);
+
+  var nomeFile = await EAzureBlobStorageImage.uploadFile(UriImg);
+  console.log("Nome azure del file caricato: "+nomeFile);
+  setToken(nomeFile)
+};
+
+
+polling = async () => {
+
+  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=XBOH06FcqSHbJGhHAsDBS6leB3vBv9nLmIrFh8JJCr1UstNIsLkx0Q=='
+  const response = await fetch(query, {method: "GET"});
+  if (response.status === 200) {
+      Alert.alert("Mascherina non rilevata");
+  }
+  if (response.status === 201) {
+      Alert.alert("Mascherina riconosciuta!");
+  }
+  else{
+    Alert.alert("Riprova più tardi ..");
+  }
+
+    setNewUri(null); // Svuota la var dall'URI della foto già caricata
+    setFetchMode(false);
+};
 
 
 
@@ -87,7 +109,8 @@ snap = async () => {
           <MaterialIcons name="flip-camera-android" size={40} color="black" />
           </TouchableOpacity>
           <TouchableOpacity onPress={snap}><FontAwesome name="camera-retro" size={40} color="black" /></TouchableOpacity>
-          <TouchableOpacity><AntDesign name="cloudupload" size={40} color="black" /></TouchableOpacity>
+          <TouchableOpacity  disabled={UriImg == null || isFetching ? true : false} onPress={upload}><AntDesign name="cloudupload" size= {40} color={UriImg == null || isFetching? 'rgba(0, 0, 0, .2)' : 'black'} /></TouchableOpacity>
+          <TouchableOpacity onPress={polling}><FontAwesome name="assistive-listening-systems" size={40} color="black" /></TouchableOpacity>
         </View>
       </View >
 
