@@ -11,8 +11,7 @@ export default function PhotoScreen() {
   const [type, setType] = useState(Camera.Constants.Type.front)
   const [UriImg, setNewUri] = useState(null);
   const [token, setToken] = useState(null);
-  const [isFetching, setFetchMode] = useState(false);
-
+  const [isAzureTalk, setCommAzure] = useState(false);
 
   useEffect(() => {
       EAzureBlobStorageImage.configure(
@@ -20,6 +19,7 @@ export default function PhotoScreen() {
     "asBWW61XzSADiBm+ePs0R92ouRXReni5YoDLjvanrRTn2IZbmbtNvJUsv3BmmJF+9v+W0VHg7EsnKwtpzuy4ag==", //Account Key
     "maskpleasecontainer" //Container Name
   );
+
   }, []);
 
 
@@ -54,44 +54,47 @@ snap = async () => {
 
 upload = async () => {
 
-  setFetchMode(true);
+  setCommAzure(true);
 
   var nomeFile = await EAzureBlobStorageImage.uploadFile(UriImg);
   console.log("Nome azure del file caricato: "+nomeFile);
   setToken(nomeFile);
 
-  let i = 0;
-  let finish = undefined;
-    do {
-      finish = await polling();
-      i++;
+
+  // Avvia pooling ogni 1,5 secondi fino a 15 volte max
+  let i = 0
+  const intervalId = setInterval(async () => {
+    let risp = await polling();
+    if (risp == 200 || risp == 201 || i > 15) { //ancora non è pronto
+      if(risp == 200){
+        Alert.alert('Mascherina non riconosciuta');
+        console.log("Mascherina non riconosciuta");
+      }
+      if(risp == 201){
+        Alert.alert('Mascherina rilevata!');
+        console.log("Mascherina rilevata!");
+      };
+      clearInterval(intervalId);
+      return;
     }
-    while (finish == 300 || i< 10);
+
+    console.log("provo di nuovo a chiedere lo status..");
+
+    if(i == 15){
+      Alert.alert('Non riesco a ricevere una risposta dal server :(');
+      console.log("Non riesco a connettermi al server ... :(");
+    }
+    i = i + 1;
+  }, 1500);
 
 };
-
 
 
 polling = async () => {
-
   let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=XBOH06FcqSHbJGhHAsDBS6leB3vBv9nLmIrFh8JJCr1UstNIsLkx0Q=='
   const response = await fetch(query, {method: "GET"});
-  if (response.status === 200) {
-      Alert.alert("Mascherina non rilevata");
-  }
-  if (response.status === 201) {
-      Alert.alert("Mascherina riconosciuta!");
-  }
-  else{
-    Alert.alert("Riprova più tardi ..");
-  }
-
-    setNewUri(null); // Svuota la var dall'URI della foto già caricata
-    setFetchMode(false);
-
-    return response.status;
+  return response.status;
 };
-
 
 
 
@@ -121,8 +124,7 @@ polling = async () => {
           <MaterialIcons name="flip-camera-android" size={40} color="black" />
           </TouchableOpacity>
           <TouchableOpacity onPress={snap}><FontAwesome name="camera-retro" size={40} color="black" /></TouchableOpacity>
-          <TouchableOpacity  disabled={UriImg == null || isFetching ? true : false} onPress={upload}><AntDesign name="cloudupload" size= {40} color={UriImg == null || isFetching? 'rgba(0, 0, 0, .2)' : 'black'} /></TouchableOpacity>
-          <TouchableOpacity onPress={polling}><FontAwesome name="assistive-listening-systems" size={40} color="black" /></TouchableOpacity>
+          <TouchableOpacity  disabled={UriImg == null || isAzureTalk ? true : false} onPress={upload}><AntDesign name="cloudupload" size= {40} color={UriImg == null || isAzureTalk? 'rgba(0, 0, 0, .2)' : 'black'} /></TouchableOpacity>
         </View>
       </View >
 

@@ -109,11 +109,17 @@ export default class initialScreen extends React.Component {
       serviceON: false,
       GPSattivo: false,
       repuScore: 80,
+      numMasks: '?',
     };
 
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
 
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      console.log("Get Numero mascherine!");
+      this.getNumMask();
+    });
     // Listener quando apro sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
       this.goPhotoScreen(); // Vai alla schermata della foto
@@ -129,13 +135,38 @@ export default class initialScreen extends React.Component {
    }
 
 
+
+
    async componentDidUpdate(){
+     //Rileva costantemente se il GPS è attivo
      let servicesEnabled = await Location.hasServicesEnabledAsync();
      this.setState({GPSattivo: servicesEnabled}, () => {
        if(!servicesEnabled) this.turnOFFtracking();
         else if (this.state.serviceON) this.turnONtracking();
      });
    }
+
+
+   componentWillUnmount() {
+     // Remove listener del numero di mascherine
+     this.focusListener.remove();
+   }
+
+
+
+   getNumMask = async () => {
+     let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=ianrabmY0XiaP4UZhBUOhcmYuj7kUqPO4i5ag4wEaqstf2dLi9d4DQ=='
+     const response = await fetch(url)
+     .then((response) => response.text())
+      .then((numMascherine) => {
+        console.log("Numero mascherine "+ numMascherine );
+        this.setState({
+            numMasks: numMascherine
+          });
+      })
+
+   };
+
 
 
   goPhotoScreen = () => {
@@ -205,7 +236,7 @@ export default class initialScreen extends React.Component {
                justifyContent: 'center',
                alignItems: 'center'
              }}>
-             <Text style={{fontSize: 20, fontWeight: 'bold',  fontFamily: 'monospace', padding: 5}}>12</Text>
+             <Text style={{fontSize: 20, fontWeight: 'bold',  fontFamily: 'monospace', padding: 5}}>{this.state.numMasks}</Text>
              <MaterialIcons  style={{padding:5}} name="masks" size={30} color="white" />
            </View>
         </View >
