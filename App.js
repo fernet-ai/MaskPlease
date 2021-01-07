@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View , Image} from 'react-native';
+import { StyleSheet, Text, View , Image, AsyncStorage} from 'react-native';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import AppIntroSlider from 'react-native-app-intro-slider';
@@ -108,6 +108,16 @@ export default class App extends Component {
 
   _onDone = () => {
     this.setState({ showRealApp: true });
+    try {
+
+      //Inizializzo il RepuScore
+      AsyncStorage.setItem("RepuScore", "50");
+      //Allora devo salvare il fatto che ho visto il tutorial
+      AsyncStorage.setItem("TutorialVisto", "visto");
+
+    } catch (error) {
+      console.log("Non riesco a salvare lo stato in modo persistente", error);
+    }
   };
 
 
@@ -115,9 +125,20 @@ export default class App extends Component {
     this.setState({ showRealApp: true });
   };
 
+  iSeenTutorial= async () => {
+    try {
+      let data = await AsyncStorage.getItem("TutorialVisto");
+      console.log("Ho visto il tutorial? "+data);
+      if( data == "visto") return true;
+      else false;
+    } catch (error) {
+      console.log("Non riesco a salvare lo stato in modo persistente", error);
+    }
+  };
+
 
   render() {
-    if (this.state.showRealApp) {
+    if (this.state.showRealApp && this.iSeenTutorial) {
       return <AppContainer />;
     } else {
       return (

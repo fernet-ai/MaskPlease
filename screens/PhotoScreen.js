@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Button, Image, StyleSheet, Text, View, Alert, TouchableOpacity } from 'react-native';
+import {Button, Image, StyleSheet, Text, View, Alert, TouchableOpacity, AsyncStorage } from 'react-native';
 import { Camera } from 'expo-camera';
 import { FontAwesome ,  MaterialIcons, AntDesign} from '@expo/vector-icons';
 import { EAzureBlobStorageImage } from 'react-native-azure-blob-storage';
@@ -73,6 +73,8 @@ upload = async () => {
       if(risp == 201){
         Alert.alert('Mascherina rilevata!');
         console.log("Mascherina rilevata!");
+        // Aumenta repuScore
+        incrementRepuScore();
       };
       clearInterval(intervalId);
       return;
@@ -97,12 +99,23 @@ polling = async () => {
 };
 
 
+// Incrementa il RepuScore
+incrementRepuScore = async () => {
+  console.log("incremento punti reputazione ..");
+  let OldScore = await AsyncStorage.getItem("RepuScore");
+  let newScore = parseInt(OldScore) + 3;
+  console.log("Nuovo score: "+ newScore);
+  AsyncStorage.setItem("RepuScore", String(newScore));
+
+};
+
+
 
   return (
     <View style={styles.container}>
 
     <View style={styles.TopView}>
-       <Image source={logo} style={{width: '50%', height: '50%', marginTop:'10%' }} />
+       <Image source={logo} style={{width: '50%', height: '50%'}} />
     </View >
 
 
@@ -144,6 +157,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#8d6cae',
     flex: 1,
   },

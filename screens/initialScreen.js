@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, AsyncStorage } from "react-native";
 import * as TaskManager from "expo-task-manager";
 import * as Permissions from "expo-permissions";
 import * as Location from "expo-location";
@@ -71,8 +71,8 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
       //(abbassare x la batteria)
         accuracy: Location.Accuracy.Highest,
         deferredUpdatesInterval: 0,
-        deferredUpdatesDistance: 1000, // era 10
-        distanceInterval: 100, // era 10
+        deferredUpdatesDistance: 10, // era 10
+        distanceInterval: 10, // era 10
 
         // Notifica fissa di di geolocalizzazione
         foregroundService: {
@@ -108,12 +108,15 @@ export default class initialScreen extends React.Component {
     state = {
       serviceON: false,
       GPSattivo: false,
-      repuScore: 80,
+      repuScore: 0,
       numMasks: '?',
     };
 
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
+
+    //Ecco il repuScore
+    this.loadRepuscore();
 
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
@@ -154,11 +157,18 @@ export default class initialScreen extends React.Component {
 
 
 
+   loadRepuscore = async () => {
+       let score = await AsyncStorage.getItem("RepuScore");
+       this.setState({repuScore: score});
+   }
+
+
    getNumMask = async () => {
      let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=ianrabmY0XiaP4UZhBUOhcmYuj7kUqPO4i5ag4wEaqstf2dLi9d4DQ=='
      const response = await fetch(url)
      .then((response) => response.text())
       .then((numMascherine) => {
+        //Se il server e' spento può dare problemi
         console.log("Numero mascherine "+ numMascherine );
         this.setState({
             numMasks: numMascherine
@@ -349,7 +359,6 @@ const styles = StyleSheet.create({
 
     TopView:{
       width: '90%',
-      marginTop: '5%',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
