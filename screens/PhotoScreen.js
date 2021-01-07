@@ -104,6 +104,7 @@ incrementRepuScore = async () => {
   console.log("incremento punti reputazione ..");
   let OldScore = await AsyncStorage.getItem("RepuScore");
   let newScore = parseInt(OldScore) + 3;
+  if(newScore > 100) newScore = 100; // Limite massimo
   console.log("Nuovo score: "+ newScore);
   AsyncStorage.setItem("RepuScore", String(newScore));
 
@@ -138,6 +139,7 @@ incrementRepuScore = async () => {
           </TouchableOpacity>
           <TouchableOpacity onPress={snap}><FontAwesome name="camera-retro" size={40} color="black" /></TouchableOpacity>
           <TouchableOpacity  disabled={UriImg == null || isAzureTalk ? true : false} onPress={upload}><AntDesign name="cloudupload" size= {40} color={UriImg == null || isAzureTalk? 'rgba(0, 0, 0, .2)' : 'black'} /></TouchableOpacity>
+          <TouchableOpacity onPress={incrementRepuScore}><AntDesign name="infocirlce" size={40} color="black" /></TouchableOpacity>
         </View>
       </View >
 

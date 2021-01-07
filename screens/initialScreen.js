@@ -115,13 +115,14 @@ export default class initialScreen extends React.Component {
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
 
-    //Ecco il repuScore
-    this.loadRepuscore();
+
 
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
       console.log("Get Numero mascherine!");
       this.getNumMask();
+      //Ecco il repuScore
+      this.loadRepuscore();
     });
     // Listener quando apro sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
@@ -157,13 +158,18 @@ export default class initialScreen extends React.Component {
 
 
 
+
+
    loadRepuscore = async () => {
-       let score = await AsyncStorage.getItem("RepuScore");
-       this.setState({repuScore: score});
+       AsyncStorage.getItem("RepuScore").then((score) => {
+         console.log("Nuovo RepuScore aggiornato: "+ score);
+         this.setState({repuScore: score});
+    });
    }
 
 
    getNumMask = async () => {
+     /*
      let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=ianrabmY0XiaP4UZhBUOhcmYuj7kUqPO4i5ag4wEaqstf2dLi9d4DQ=='
      const response = await fetch(url)
      .then((response) => response.text())
@@ -174,7 +180,7 @@ export default class initialScreen extends React.Component {
             numMasks: numMascherine
           });
       })
-
+*/
    };
 
 

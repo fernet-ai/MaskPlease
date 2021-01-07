@@ -73,8 +73,14 @@ export default class App extends Component {
     super(props);
     this.state = {
       showRealApp: false,
+      iSeenTutorial: false,
     };
   }
+
+  async componentDidMount() {
+    await this.SeenTutorial();
+
+}
 
 
   _renderItem = ({ item }) => {
@@ -125,12 +131,13 @@ export default class App extends Component {
     this.setState({ showRealApp: true });
   };
 
-  iSeenTutorial= async () => {
+  SeenTutorial= async () => {
     try {
-      let data = await AsyncStorage.getItem("TutorialVisto");
-      console.log("Ho visto il tutorial? "+data);
-      if( data == "visto") return true;
-      else false;
+      AsyncStorage.getItem("TutorialVisto").then((data) => {
+        if( data == "visto")
+          this.setState({iSeenTutorial: true});
+      });
+
     } catch (error) {
       console.log("Non riesco a salvare lo stato in modo persistente", error);
     }
@@ -138,7 +145,7 @@ export default class App extends Component {
 
 
   render() {
-    if (this.state.showRealApp && this.iSeenTutorial) {
+    if (this.state.showRealApp || this.state.iSeenTutorial) {
       return <AppContainer />;
     } else {
       return (
