@@ -110,6 +110,7 @@ export default class initialScreen extends React.Component {
       GPSattivo: false,
       repuScore: 0,
       numMasks: '?',
+      photoScreenBlocked: true,
     };
 
 
@@ -127,6 +128,7 @@ export default class initialScreen extends React.Component {
     // Listener quando apro sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
       this.goPhotoScreen(); // Vai alla schermata della foto
+      this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto
     });
 
     let servicesEnabled = await Location.hasServicesEnabledAsync();
@@ -184,6 +186,9 @@ export default class initialScreen extends React.Component {
    };
 
 
+   nonPuoiAprire = () => {
+ 		 Alert.alert("Hey, non è ancora il momento", 'Puoi fare una foto solo quando esci di casa e clicchi sulla notifica di avviso!');
+ 	}
 
   goPhotoScreen = () => {
 		this.props.navigation.navigate('Photo', {msg: "un messaggio"});
@@ -310,7 +315,7 @@ export default class initialScreen extends React.Component {
             </View>
           </View>
 
-          <TouchableOpacity onPress={this.goPhotoScreen}  style={{
+          <TouchableOpacity onPress={this.state.photoScreenBlocked? this.nonPuoiAprire : this.goPhotoScreen}  style={{
             height: '80%',
             width: '48%',
             backgroundColor: 'rgba(0, 0, 0, .2)',
