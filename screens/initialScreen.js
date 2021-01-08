@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, AsyncStorage } from "react-native";
 import * as TaskManager from "expo-task-manager";
 import * as Permissions from "expo-permissions";
 import * as Location from "expo-location";
@@ -12,9 +12,9 @@ import logo from '../assets/logo.png';
 
 const LOCATION_FETCH_TASK = "upload-job-task-with-location";
 
+var DataPrimaUscita = undefined;
 
 TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
-  console.log("qui potrei calcolarci la posizione");
 
 	await Notifications.scheduleNotificationAsync({
 	  content: {
@@ -28,8 +28,13 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
 	  },
 	});
 
+	if(DataPrimaUscita == null) {
+		DataPrimaUscita = new Date();
+	 console.log("PARTE CONTO ALLA ROVESCIA: Data di uscita: "+ DataPrimaUscita);
+}
 
-  console.log(LOCATION_FETCH_TASK, "Nuova posizione!");
+  console.log(LOCATION_FETCH_TASK, "Nuova posizione RILEVATA! ");
+
 });
 
 
@@ -70,7 +75,7 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
       //Forse significa che semplicemente l'aggiornamneto avviene più frequentemente
       //(abbassare x la batteria)
         accuracy: Location.Accuracy.Highest,
-        deferredUpdatesInterval: 0,
+        //deferredUpdatesInterval: 0,
         deferredUpdatesDistance: 1000, // era 10
         distanceInterval: 100, // era 10
 
@@ -108,15 +113,30 @@ export default class initialScreen extends React.Component {
     state = {
       serviceON: false,
       GPSattivo: false,
-      repuScore: 80,
+      repuScore: 0,
+      numMasks: '?',
+      photoScreenBlocked: true,
     };
 
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      console.log("Get Numero mascherine!");
+      this.getNumMask();
+      //Ecco il repuScore
+      this.loadRepuscore();
+      // Set scemarop di penalità
+      this.setPenality();
+    });
 
     // Listener quando apro sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
-      this.goPhotoScreen(); // Vai alla schermata della foto
+        this.setPenality().then((penality) => {
+          if(penality == 0) // se non hai ricevuto penalità e sei ancora in tempo ...
+            this.goPhotoScreen(); // Vai alla schermata della foto
+          else Alert.alert("Mi spiace, sei in ritardo ... 😪👎");
+     });
     });
 
     let servicesEnabled = await Location.hasServicesEnabledAsync();
@@ -129,7 +149,10 @@ export default class initialScreen extends React.Component {
    }
 
 
+
+
    async componentDidUpdate(){
+     //Rileva costantemente se il GPS è attivo
      let servicesEnabled = await Location.hasServicesEnabledAsync();
      this.setState({GPSattivo: servicesEnabled}, () => {
        if(!servicesEnabled) this.turnOFFtracking();
@@ -137,6 +160,73 @@ export default class initialScreen extends React.Component {
      });
    }
 
+
+   componentWillUnmount() {
+     // Remove listener del numero di mascherine
+     this.focusListener.remove();
+   }
+
+
+
+   // Decremrnta il RepuScore
+   decrementRepuScore = async (punti) => {
+     console.log("decremento "+punti+" reputazione ..");
+     let OldScore = await AsyncStorage.getItem("RepuScore");
+     let newScore = parseInt(OldScore) - punti;
+     if(newScore < 0) newScore = 0; // Limite minimo
+     console.log("Nuovo score: "+ newScore);
+     AsyncStorage.setItem("RepuScore", String(newScore));
+     this.loadRepuscore();
+   };
+
+
+   setPenality = async () =>{
+     console.log("Calcolo penalità ...");
+      if(DataPrimaUscita == null) return 0;
+      let  now = new Date();
+      let tempoTrascorso = (now - DataPrimaUscita) / 1000;
+      console.log("Son trascorsi "+tempoTrascorso+" secondi dalla scadenza");
+      DataPrimaUscita = undefined; // Resetta il tempo
+
+      let penality = undefined;
+      if(tempoTrascorso <= 60){ // Sei ancora in tempo x fare la foto
+        this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto da home
+        return 0; // Penalità 0
+      }
+      else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(1); return -1;}
+      else if(tempoTrascorso > 120 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(2); return -2;}
+      else if(tempoTrascorso > 200 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(3); return -3;}
+      return -999;
+   }
+
+
+
+   loadRepuscore = async () => {
+       AsyncStorage.getItem("RepuScore").then((score) => {
+         console.log("Nuovo RepuScore aggiornato: "+ score);
+         this.setState({repuScore: score});
+    });
+   }
+
+
+   getNumMask = async () => {
+/*
+		 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=i5ButKgFMGFpYHfr6TR1tgRq6ImTMAJH1Tv7j9K8CPoqvFhpggvRsw=='
+     const response = await fetch(url)
+     .then((response) => response.text())
+      .then((numMascherine) => {
+        //Se il server e' spento può dare problemi
+        console.log("Numero mascherine "+ numMascherine );
+        this.setState({
+            numMasks: numMascherine
+          });
+      })*/
+   };
+
+
+   nonPuoiAprire = () => {
+ 		 Alert.alert("Hey, non puoi 😅", 'Puoi fare una sola foto entro 15 minuti dal momento in cui esci fuori di casa (sei avvisato con una notifica) 🚗');
+ 	}
 
   goPhotoScreen = () => {
 		this.props.navigation.navigate('Photo', {msg: "un messaggio"});
@@ -205,7 +295,7 @@ export default class initialScreen extends React.Component {
                justifyContent: 'center',
                alignItems: 'center'
              }}>
-             <Text style={{fontSize: 20, fontWeight: 'bold',  fontFamily: 'monospace', padding: 5}}>12</Text>
+             <Text style={{fontSize: 20, fontWeight: 'bold',  fontFamily: 'monospace', padding: 5}}>{this.state.numMasks}</Text>
              <MaterialIcons  style={{padding:5}} name="masks" size={30} color="white" />
            </View>
         </View >
@@ -263,7 +353,7 @@ export default class initialScreen extends React.Component {
             </View>
           </View>
 
-          <TouchableOpacity onPress={this.goPhotoScreen}  style={{
+          <TouchableOpacity onPress={this.state.photoScreenBlocked? this.nonPuoiAprire : this.goPhotoScreen}  style={{
             height: '80%',
             width: '48%',
             backgroundColor: 'rgba(0, 0, 0, .2)',
@@ -274,7 +364,7 @@ export default class initialScreen extends React.Component {
             }}>
             <View style={{flexDirection: 'row'}}>
               <FontAwesome5 style={{padding: 5}} name="head-side-mask" size={50} color="white" />
-              <FontAwesome style={{padding: 5}} name="arrow-up" size={50} color="green" />
+              <FontAwesome style={{padding: 5}} name="arrow-up" size={50} color={this.state.photoScreenBlocked? 'rgba(0, 0, 0, .2)': "green"} />
             </View>
             <MaterialCommunityIcons  name="camera-front-variant" size={130} color="black" />
         </TouchableOpacity>
@@ -318,7 +408,6 @@ const styles = StyleSheet.create({
 
     TopView:{
       width: '90%',
-      marginTop: '5%',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
