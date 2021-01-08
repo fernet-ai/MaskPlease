@@ -12,9 +12,9 @@ import logo from '../assets/logo.png';
 
 const LOCATION_FETCH_TASK = "upload-job-task-with-location";
 
+var DataPrimaUscita = undefined;
 
 TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
-  console.log("qui potrei calcolarci la posizione");
 
 	await Notifications.scheduleNotificationAsync({
 	  content: {
@@ -28,8 +28,13 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
 	  },
 	});
 
+	if(DataPrimaUscita == null) {
+		DataPrimaUscita = new Date();
+	 console.log("PARTE CONTO ALLA ROVESCIA: Data di uscita: "+ DataPrimaUscita);
+}
 
-  console.log(LOCATION_FETCH_TASK, "Nuova posizione!");
+  console.log(LOCATION_FETCH_TASK, "Nuova posizione RILEVATA! ");
+
 });
 
 
@@ -70,9 +75,9 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
       //Forse significa che semplicemente l'aggiornamneto avviene più frequentemente
       //(abbassare x la batteria)
         accuracy: Location.Accuracy.Highest,
-        deferredUpdatesInterval: 0,
-        deferredUpdatesDistance: 10, // era 10
-        distanceInterval: 10, // era 10
+        //deferredUpdatesInterval: 0,
+        deferredUpdatesDistance: 1000, // era 10
+        distanceInterval: 100, // era 10
 
         // Notifica fissa di di geolocalizzazione
         foregroundService: {
@@ -115,20 +120,23 @@ export default class initialScreen extends React.Component {
 
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
-
-
-
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("didFocus", () => {
       console.log("Get Numero mascherine!");
       this.getNumMask();
       //Ecco il repuScore
       this.loadRepuscore();
+      // Set scemarop di penalità
+      this.setPenality();
     });
+
     // Listener quando apro sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
-      this.goPhotoScreen(); // Vai alla schermata della foto
-      this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto
+        this.setPenality().then((penality) => {
+          if(penality == 0) // se non hai ricevuto penalità e sei ancora in tempo ...
+            this.goPhotoScreen(); // Vai alla schermata della foto
+          else Alert.alert("Mi spiace, sei in ritardo ... 😪👎");
+     });
     });
 
     let servicesEnabled = await Location.hasServicesEnabledAsync();
@@ -160,6 +168,37 @@ export default class initialScreen extends React.Component {
 
 
 
+   // Decremrnta il RepuScore
+   decrementRepuScore = async (punti) => {
+     console.log("decremento "+punti+" reputazione ..");
+     let OldScore = await AsyncStorage.getItem("RepuScore");
+     let newScore = parseInt(OldScore) - punti;
+     if(newScore < 0) newScore = 0; // Limite minimo
+     console.log("Nuovo score: "+ newScore);
+     AsyncStorage.setItem("RepuScore", String(newScore));
+     this.loadRepuscore();
+   };
+
+
+   setPenality = async () =>{
+     console.log("Calcolo penalità ...");
+      if(DataPrimaUscita == null) return 0;
+      let  now = new Date();
+      let tempoTrascorso = (now - DataPrimaUscita) / 1000;
+      console.log("Son trascorsi "+tempoTrascorso+" secondi dalla scadenza");
+      DataPrimaUscita = undefined; // Resetta il tempo
+
+      let penality = undefined;
+      if(tempoTrascorso <= 60){ // Sei ancora in tempo x fare la foto
+        this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto da home
+        return 0; // Penalità 0
+      }
+      else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(1); return -1;}
+      else if(tempoTrascorso > 120 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(2); return -2;}
+      else if(tempoTrascorso > 200 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(3); return -3;}
+      return -999;
+   }
+
 
 
    loadRepuscore = async () => {
@@ -171,8 +210,8 @@ export default class initialScreen extends React.Component {
 
 
    getNumMask = async () => {
-     /*
-     let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=ianrabmY0XiaP4UZhBUOhcmYuj7kUqPO4i5ag4wEaqstf2dLi9d4DQ=='
+/*
+		 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=i5ButKgFMGFpYHfr6TR1tgRq6ImTMAJH1Tv7j9K8CPoqvFhpggvRsw=='
      const response = await fetch(url)
      .then((response) => response.text())
       .then((numMascherine) => {
@@ -181,13 +220,12 @@ export default class initialScreen extends React.Component {
         this.setState({
             numMasks: numMascherine
           });
-      })
-*/
+      })*/
    };
 
 
    nonPuoiAprire = () => {
- 		 Alert.alert("Hey, non è ancora il momento", 'Puoi fare una foto solo quando esci di casa e clicchi sulla notifica di avviso!');
+ 		 Alert.alert("Hey, non puoi 😅", 'Puoi fare una sola foto entro 15 minuti dal momento in cui esci fuori di casa (sei avvisato con una notifica) 🚗');
  	}
 
   goPhotoScreen = () => {
@@ -326,7 +364,7 @@ export default class initialScreen extends React.Component {
             }}>
             <View style={{flexDirection: 'row'}}>
               <FontAwesome5 style={{padding: 5}} name="head-side-mask" size={50} color="white" />
-              <FontAwesome style={{padding: 5}} name="arrow-up" size={50} color="green" />
+              <FontAwesome style={{padding: 5}} name="arrow-up" size={50} color={this.state.photoScreenBlocked? 'rgba(0, 0, 0, .2)': "green"} />
             </View>
             <MaterialCommunityIcons  name="camera-front-variant" size={130} color="black" />
         </TouchableOpacity>

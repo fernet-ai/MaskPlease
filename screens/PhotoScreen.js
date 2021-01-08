@@ -60,21 +60,22 @@ upload = async () => {
   console.log("Nome azure del file caricato: "+nomeFile);
   setToken(nomeFile);
 
-
-  // Avvia pooling ogni 1,5 secondi fino a 15 volte max
+  // Avvia poling ogni 1,5 secondi fino a 15 volte max
   let i = 0
   const intervalId = setInterval(async () => {
     let risp = await polling();
     if (risp == 200 || risp == 201 || i > 15) { //ancora non è pronto
       if(risp == 200){
-        Alert.alert('Mascherina non riconosciuta');
+        Alert.alert('Mascherina non riconosciuta ... + 0 RepuPoint 😅 ');
         console.log("Mascherina non riconosciuta");
+        // Disabilita fotocamera
       }
       if(risp == 201){
-        Alert.alert('Mascherina rilevata!');
+        Alert.alert('Mascherina rilevata! +3 RepuPoints 🥳');
         console.log("Mascherina rilevata!");
         // Aumenta repuScore
         incrementRepuScore();
+        // Disabilita fotocamera
       };
       clearInterval(intervalId);
       return;
@@ -84,7 +85,8 @@ upload = async () => {
 
     if(i == 15){
       Alert.alert('Non riesco a ricevere una risposta dal server :(');
-      console.log("Non riesco a connettermi al server ... :(");
+      console.log("Non riesco a connettermi al server ... 😑");
+      // Disabilita fotocamera
     }
     i = i + 1;
   }, 1500);
@@ -109,7 +111,6 @@ incrementRepuScore = async () => {
   AsyncStorage.setItem("RepuScore", String(newScore));
 
 };
-
 
 
   return (
