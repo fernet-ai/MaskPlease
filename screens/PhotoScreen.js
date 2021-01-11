@@ -6,12 +6,13 @@ import { EAzureBlobStorageImage } from 'react-native-azure-blob-storage';
 
 import logo from '../assets/logo.png';
 
-export default function PhotoScreen() {
+export default function PhotoScreen(props) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.front)
   const [UriImg, setNewUri] = useState(null);
   const [token, setToken] = useState(null);
   const [isAzureTalk, setCommAzure] = useState(false);
+  const [isBlockPhoto, setBlockPhoto] = useState(false);
 
   useEffect(() => {
       EAzureBlobStorageImage.configure(
@@ -54,6 +55,7 @@ snap = async () => {
 
 upload = async () => {
 
+  setBlockPhoto(true);
   setCommAzure(true);
 
   var nomeFile = await EAzureBlobStorageImage.uploadFile(UriImg);
@@ -68,14 +70,14 @@ upload = async () => {
       if(risp == 200){
         Alert.alert('Mascherina non riconosciuta ... + 0 RepuPoint 😅 ');
         console.log("Mascherina non riconosciuta");
-        // Disabilita fotocamera
+        props.navigation.state.params.updateData("OK MASK");
       }
       if(risp == 201){
         Alert.alert('Mascherina rilevata! +3 RepuPoints 🥳');
         console.log("Mascherina rilevata!");
+        props.navigation.state.params.updateData("NO MASK");
         // Aumenta repuScore
         incrementRepuScore();
-        // Disabilita fotocamera
       };
       clearInterval(intervalId);
       return;
@@ -86,7 +88,7 @@ upload = async () => {
     if(i == 15){
       Alert.alert('Non riesco a ricevere una risposta dal server :(');
       console.log("Non riesco a connettermi al server ... 😑");
-      // Disabilita fotocamera
+      props.navigation.state.params.updateData("Error");
     }
     i = i + 1;
   }, 1500);
@@ -95,7 +97,7 @@ upload = async () => {
 
 
 polling = async () => {
-  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=XBOH06FcqSHbJGhHAsDBS6leB3vBv9nLmIrFh8JJCr1UstNIsLkx0Q=='
+  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=g8N5MvDvtVpaSiwgrB1x/87MsgJCq6uVTCqY1XFg4htF7lT8EQPaNA=='
   const response = await fetch(query, {method: "GET"});
   return response.status;
 };
@@ -138,9 +140,8 @@ incrementRepuScore = async () => {
           }}>
           <MaterialIcons name="flip-camera-android" size={40} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={snap}><FontAwesome name="camera-retro" size={40} color="black" /></TouchableOpacity>
+          <TouchableOpacity disabled={isBlockPhoto}  onPress={snap}><FontAwesome name="camera-retro" size={40} color={isBlockPhoto? 'rgba(0, 0, 0, .2)' : 'black'} /></TouchableOpacity>
           <TouchableOpacity  disabled={UriImg == null || isAzureTalk ? true : false} onPress={upload}><AntDesign name="cloudupload" size= {40} color={UriImg == null || isAzureTalk? 'rgba(0, 0, 0, .2)' : 'black'} /></TouchableOpacity>
-          <TouchableOpacity onPress={incrementRepuScore}><AntDesign name="infocirlce" size={40} color="black" /></TouchableOpacity>
         </View>
       </View >
 

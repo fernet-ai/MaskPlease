@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, AsyncStorage } from "react-native";
 import * as TaskManager from "expo-task-manager";
 import * as Permissions from "expo-permissions";
 import * as Location from "expo-location";
+import { LocationGeofencingEventType } from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { Button, Image, TouchableOpacity, Alert, Share  } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,31 +11,52 @@ import { createStackNavigator, createAppContainer } from 'react-navigation';
 import { Ionicons, Octicons, AntDesign, MaterialIcons, FontAwesome5, FontAwesome, MaterialCommunityIcons} from '@expo/vector-icons';
 import logo from '../assets/logo.png';
 
-const LOCATION_FETCH_TASK = "upload-job-task-with-location";
+const REGION_FETCH_TASK = "upload-job-task-with-location";
 
-var DataPrimaUscita = undefined;
+var DataUscita = undefined;
 
-TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
+TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, error }) => {
 
-	await Notifications.scheduleNotificationAsync({
-	  content: {
-		title: "Hai messo la mascherina? 😷",
-		body: 'Fai una foto ed aumenta il tuo RepuScore!',
-		sound: 'email-sound.wav',
-	  },
-	  trigger: {
-		seconds: 2,
-		channelId: 'tomove',
-	  },
-	});
+	if (error) {
+		console.log("E' capitato qualche errore");
+    return;
+  }
 
-	if(DataPrimaUscita == null) {
-		DataPrimaUscita = new Date();
-	 console.log("PARTE CONTO ALLA ROVESCIA: Data di uscita: "+ DataPrimaUscita);
+	if (eventType === LocationGeofencingEventType.Enter) {
+		console.log("Sei a casa:", region);
+		//Finisce l'opportunita' di fare la foto
+		if(DataUscita == null) return;
+		else{
+		await Notifications.scheduleNotificationAsync({
+			content: {
+			title: "Sei tornato a casa 🏠",
+			body: 'Ricorda di cambiare mascherina ogni 4 ore',
+			sound: 'email-sound.wav',
+			},
+			trigger: {
+			seconds: 2,
+			channelId: 'tomove',
+			},
+		});
+		DataUscita = undefined;
+	}
+	}
+
+	else if (eventType === LocationGeofencingEventType.Exit) {
+		console.log("Sei uscito fuori casa:", region);
+		await Notifications.scheduleNotificationAsync({
+			content: {
+			title: "Hai messo la mascherina? 😷",
+			body: 'Fai una foto ed aumenta il tuo RepuScore!',
+			sound: 'email-sound.wav',
+			},
+			trigger: {
+			seconds: 2,
+			channelId: 'tomove',
+			},
+		});
+		if(DataUscita == null)	DataUscita = new Date();
 }
-
-  console.log(LOCATION_FETCH_TASK, "Nuova posizione RILEVATA! ");
-
 });
 
 
@@ -50,12 +72,12 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
 
       if (locationPermission.status === "granted" && notificationPermission.status === "granted") {
 
-        const registered = await TaskManager.isTaskRegisteredAsync(LOCATION_FETCH_TASK);
+        const registered = await TaskManager.isTaskRegisteredAsync(REGION_FETCH_TASK);
         if (registered) {
           console.log("registered");
         }
 
-        // SO SE SERVE
+        // non SO SE SERVE
         Notifications.setNotificationChannelAsync('tomove', {
 			  name: 'E-mail notifications',
 			  importance: Notifications.AndroidImportance.HIGH,
@@ -63,29 +85,21 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
 			});
 
 
-      let isRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_FETCH_TASK);
+      let isRegistered = await TaskManager.isTaskRegisteredAsync(REGION_FETCH_TASK);
       if (isRegistered) {
-        console.log(`Task ${LOCATION_FETCH_TASK} Attivita registrata`);
+        console.log(`Task ${REGION_FETCH_TASK} Attivita registrata`);
       } else {
         console.log("Background Fetch Task not found - Registrazione nuova attivita ...");
       }
 
-      // Set Aggiornamento
-      await Location.startLocationUpdatesAsync(LOCATION_FETCH_TASK, {
-      //Forse significa che semplicemente l'aggiornamneto avviene più frequentemente
-      //(abbassare x la batteria)
-        accuracy: Location.Accuracy.Highest,
-        //deferredUpdatesInterval: 0,
-        deferredUpdatesDistance: 1000, // era 10
-        distanceInterval: 100, // era 10
-
-        // Notifica fissa di di geolocalizzazione
-        foregroundService: {
-          notificationBody: "Controlla che sia attiva la localizzazione",
-          notificationTitle: "Porta sempre la mascherina con te"
-        }
-      });
-
+			//Calcolo posizione di casa
+			let { coords } = await Location.getCurrentPositionAsync({});
+      // Set geofencing su casa
+			await Location.startGeofencingAsync(REGION_FETCH_TASK, [{
+				latitude:  coords.latitude,
+				longitude:  coords.longitude,
+				radius: 10,
+					}]);
       }
 
     };
@@ -94,10 +108,10 @@ TaskManager.defineTask(LOCATION_FETCH_TASK, async () => {
 
   /*Disattiva Task*/
   const onDisableTask = async () => {
-    const isRegisterd = await TaskManager.isTaskRegisteredAsync(LOCATION_FETCH_TASK );
+    const isRegisterd = await TaskManager.isTaskRegisteredAsync(REGION_FETCH_TASK );
     if (isRegisterd){
-      await Location.stopLocationUpdatesAsync(LOCATION_FETCH_TASK);
-      console.log("Disattivazione task di registrazione locazione ..");
+      await Location.stopGeofencingAsync(REGION_FETCH_TASK);
+      console.log("Stop geofencing ...");
     }
   };
 
@@ -121,7 +135,7 @@ export default class initialScreen extends React.Component {
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
     const { navigation } = this.props;
-    this.focusListener = navigation.addListener("didFocus", () => {
+    this.focusListener = navigation.addListener("willFocus", () => {
       console.log("Get Numero mascherine!");
       this.getNumMask();
       //Ecco il repuScore
@@ -132,11 +146,7 @@ export default class initialScreen extends React.Component {
 
     // Listener quando apro sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
-        this.setPenality().then((penality) => {
-          if(penality == 0) // se non hai ricevuto penalità e sei ancora in tempo ...
-            this.goPhotoScreen(); // Vai alla schermata della foto
-          else Alert.alert("Mi spiace, sei in ritardo ... 😪👎");
-     });
+			 this.goPhotoScreen();
     });
 
     let servicesEnabled = await Location.hasServicesEnabledAsync();
@@ -182,21 +192,25 @@ export default class initialScreen extends React.Component {
 
    setPenality = async () =>{
      console.log("Calcolo penalità ...");
-      if(DataPrimaUscita == null) return 0;
-      let  now = new Date();
-      let tempoTrascorso = (now - DataPrimaUscita) / 1000;
-      console.log("Son trascorsi "+tempoTrascorso+" secondi dalla scadenza");
-      DataPrimaUscita = undefined; // Resetta il tempo
 
-      let penality = undefined;
-      if(tempoTrascorso <= 60){ // Sei ancora in tempo x fare la foto
+		 // Sei a casa, non puoi farti la foto
+		 if(DataUscita == null) {
+				this.setState({photoScreenBlocked: true});
+				return -999;
+	 		}
+
+		 let  now = new Date();
+		 let tempoTrascorso = (now - DataUscita) / 1000;
+		 console.log("Son trascorsi "+tempoTrascorso+" da quando sei uscito");
+
+    if(tempoTrascorso <= 60){ // Sei ancora in tempo x fare la foto
         this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto da home
         return 0; // Penalità 0
-      }
-      else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(1); return -1;}
-      else if(tempoTrascorso > 120 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(2); return -2;}
-      else if(tempoTrascorso > 200 ){ this.setState({photoScreenBlocked: true});  this.decrementRepuScore(3); return -3;}
-      return -999;
+    }
+    else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;   this.decrementRepuScore(1); return -1;}
+    else if(tempoTrascorso > 120 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;  this.decrementRepuScore(2); return -2;} //NON VA
+    else if(tempoTrascorso > 200 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;  this.decrementRepuScore(3); return -3;} // NON VA
+    return -999;
    }
 
 
@@ -229,12 +243,21 @@ export default class initialScreen extends React.Component {
  	}
 
   goPhotoScreen = () => {
-		this.props.navigation.navigate('Photo', {msg: "un messaggio"});
+		this.setPenality().then((penality) => {
+			if(penality == 0) // se non hai ricevuto penalità e sei ancora in tempo ...
+				this.props.navigation.navigate('Photo', {updateData: this.esitoMask});
+			else Alert.alert("Mi spiace, sei in ritardo ... 😪👎");
+ });
 	}
 
   goSettingsScreen = () => {
 		this.props.navigation.navigate('Settings', {msg: "un messaggio"});
 	}
+
+	esitoMask = data => {
+	  console.log("Esito del riconoscimento: "+data);
+		if(data == "OK MASK" || data == "NO MASK" ||  data == "Error" ) DataUscita = undefined;
+}
 
 
 
@@ -374,8 +397,8 @@ export default class initialScreen extends React.Component {
 
         <View style={styles.BottomView}>
           <View style={{width: '80%', height: '100%', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-around' }}>
-            <TouchableOpacity onPress={this.onShare}><AntDesign name="sharealt" size={40} color="black" /></TouchableOpacity>
-            <TouchableOpacity><AntDesign name="infocirlce" size={40} color="black" /></TouchableOpacity>
+						<TouchableOpacity><AntDesign name="infocirlceo" size={40} color="black" /></TouchableOpacity>
+						<TouchableOpacity onPress={this.onShare}><AntDesign name="sharealt" size={40} color="black" /></TouchableOpacity>
             <TouchableOpacity onPress={this.goSettingsScreen}><Octicons name="settings" size={40} color="black" /></TouchableOpacity>
           </View>
         </View >
