@@ -24,12 +24,9 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 	if (eventType === LocationGeofencingEventType.Enter) {
 		console.log("Sei a casa:", region);
-		//Finisce l'opportunita' di fare la foto
-		if(DataUscita == null) return;
-		else{
 		await Notifications.scheduleNotificationAsync({
 			content: {
-			title: "Sei tornato a casa 🏠",
+			title: "Sei a casa 🏠",
 			body: 'Ricorda di cambiare mascherina ogni 4 ore',
 			sound: 'email-sound.wav',
 			},
@@ -38,8 +35,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 			channelId: 'tomove',
 			},
 		});
-		DataUscita = undefined;
-	}
+		if(DataUscita != null) 	DataUscita = undefined;
 	}
 
 	else if (eventType === LocationGeofencingEventType.Exit) {
@@ -98,7 +94,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 			await Location.startGeofencingAsync(REGION_FETCH_TASK, [{
 				latitude:  coords.latitude,
 				longitude:  coords.longitude,
-				radius: 10,
+				radius: 100,
 					}]);
       }
 
@@ -286,7 +282,12 @@ export default class initialScreen extends React.Component {
   } catch (error) {
     alert(error.message);
   }
-};
+}
+
+getInfo = async () => {
+	Alert.alert('Infooo');
+}
+
 
   renderEmoji(){
      if(this.state.repuScore < 20) return <Ionicons name="sad" size={60} color="yellow" />
@@ -339,8 +340,8 @@ export default class initialScreen extends React.Component {
             <TouchableOpacity style={{width:'40%'}} disabled ={!this.state.GPSattivo} onPress={this.turnOFFtracking}>
              <LinearGradient style={{opacity: this.state.serviceON ? 1 : 0.2, flexDirection: 'row', borderColor: '#156CAE', borderRightWidth: 1, borderBottomLeftRadius: 10, borderTopLeftRadius: 40, height:'60%', alignItems: 'center',  justifyContent: 'center'}}
                colors={["#8d6cae", "#9b46ae"]}>
-                 <MaterialIcons name="location-off" size={30} color="'rgba(0,0,0,0.5)'" />
-                 <FontAwesome5 name="virus" size={60} color="black" />
+                 <MaterialIcons name="location-off" size={60} color="'rgba(0,0,0,0.5)'" />
+                 <FontAwesome5 name="virus" size={30} color="black" />
                </LinearGradient>
             </TouchableOpacity>
 
@@ -397,7 +398,7 @@ export default class initialScreen extends React.Component {
 
         <View style={styles.BottomView}>
           <View style={{width: '80%', height: '100%', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-around' }}>
-						<TouchableOpacity><AntDesign name="infocirlceo" size={40} color="black" /></TouchableOpacity>
+						<TouchableOpacity onPress={this.getInfo}><AntDesign name="infocirlceo" size={40} color="black" /></TouchableOpacity>
 						<TouchableOpacity onPress={this.onShare}><AntDesign name="sharealt" size={40} color="black" /></TouchableOpacity>
             <TouchableOpacity onPress={this.goSettingsScreen}><Octicons name="settings" size={40} color="black" /></TouchableOpacity>
           </View>
