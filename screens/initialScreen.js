@@ -11,6 +11,8 @@ import { createStackNavigator, createAppContainer } from 'react-navigation';
 import { Ionicons, Octicons, AntDesign, MaterialIcons, FontAwesome5, FontAwesome, MaterialCommunityIcons} from '@expo/vector-icons';
 import logo from '../assets/logo.png';
 
+const API_KEY = process.env.REACT_APP_WEATHER_API_KEY;
+
 const REGION_FETCH_TASK = "upload-job-task-with-location";
 
 var DataUscita = undefined;
@@ -73,7 +75,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
           console.log("registered");
         }
 
-        // non SO SE SERVE
+
         Notifications.setNotificationChannelAsync('tomove', {
 			  name: 'E-mail notifications',
 			  importance: Notifications.AndroidImportance.HIGH,
@@ -130,6 +132,7 @@ export default class initialScreen extends React.Component {
 
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
+		console.log(API_KEY);
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("willFocus", () => {
       console.log("Get Numero mascherine!");
@@ -246,9 +249,10 @@ export default class initialScreen extends React.Component {
  });
 	}
 
+/*
   goSettingsScreen = () => {
 		this.props.navigation.navigate('Settings', {msg: "un messaggio"});
-	}
+	}*/
 
 	esitoMask = data => {
 	  console.log("Esito del riconoscimento: "+data);
