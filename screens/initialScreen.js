@@ -11,7 +11,6 @@ import { createStackNavigator, createAppContainer } from 'react-navigation';
 import { Ionicons, Octicons, AntDesign, MaterialIcons, FontAwesome5, FontAwesome, MaterialCommunityIcons} from '@expo/vector-icons';
 import logo from '../assets/logo.png';
 
-const API_KEY = process.env.REACT_APP_WEATHER_API_KEY;
 
 const REGION_FETCH_TASK = "upload-job-task-with-location";
 
@@ -132,7 +131,6 @@ export default class initialScreen extends React.Component {
 
 
   async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
-		console.log(API_KEY);
     const { navigation } = this.props;
     this.focusListener = navigation.addListener("willFocus", () => {
       console.log("Get Numero mascherine!");
@@ -249,10 +247,9 @@ export default class initialScreen extends React.Component {
  });
 	}
 
-/*
-  goSettingsScreen = () => {
-		this.props.navigation.navigate('Settings', {msg: "un messaggio"});
-	}*/
+  goInfosScreen = () => {
+		this.props.navigation.navigate('Info', {msg: "un messaggio"});
+	}
 
 	esitoMask = data => {
 	  console.log("Esito del riconoscimento: "+data);
@@ -288,8 +285,11 @@ export default class initialScreen extends React.Component {
   }
 }
 
-getInfo = async () => {
-	Alert.alert('Infooo');
+getDevelopProject = async () => {
+	Alert.alert(
+  'DEVELOPERS 🛠️',
+  'Pierluigi Liguori - Fabiano Priore\nProgetto Cloud Computing 20/21'
+)
 }
 
 
@@ -402,9 +402,9 @@ getInfo = async () => {
 
         <View style={styles.BottomView}>
           <View style={{width: '80%', height: '100%', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-around' }}>
-						<TouchableOpacity onPress={this.getInfo}><AntDesign name="infocirlceo" size={40} color="black" /></TouchableOpacity>
+						<MaterialIcons onPress={this.getDevelopProject} name="developer-mode" size={40} color="black" />
 						<TouchableOpacity onPress={this.onShare}><AntDesign name="sharealt" size={40} color="black" /></TouchableOpacity>
-            <TouchableOpacity onPress={this.goSettingsScreen}><Octicons name="settings" size={40} color="black" /></TouchableOpacity>
+						<TouchableOpacity onPress={this.goInfosScreen}><AntDesign name="infocirlceo" size={40} color="black" /></TouchableOpacity>
           </View>
         </View >
 

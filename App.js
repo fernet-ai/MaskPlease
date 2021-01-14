@@ -7,7 +7,7 @@ import { FontAwesome5, Fontisto, MaterialIcons  } from '@expo/vector-icons';
 
 import initialScreen from './screens/initialScreen';
 import photoScreen from './screens/PhotoScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import InfoScreen from './screens/InfoScreen';
 
 
 const AppNavigator = createStackNavigator({
@@ -27,8 +27,8 @@ const AppNavigator = createStackNavigator({
     },
   },
 
-  Settings: {
-      screen: SettingsScreen,
+  Info: {
+      screen: InfoScreen,
     navigationOptions: {
       title: 'Take Selfie',
       headerShown: false
@@ -44,22 +44,32 @@ const AppContainer = createAppContainer(AppNavigator);
 const slides = [
   {
     key: 's1',
-    title: 'Benvenuto!',
-    text: 'obbbiettivi(scopo)',
+    title: 'Enjoy Maskplease!',
+    text: 'L\'idea nasce al fine di tutelare la nostra salute in'+
+    ' periodo di pandemia, invogliando l\'utente a rispettare buone norme '+
+    ' come quella di indossare la mascherina fuori casa.\n\n'+
+    '',
     image: require('./assets/favicon.png'),
     backgroundColor: '#000',
   },
   {
     key: 's2',
-    title: 'Istruzioni',
-    text: 'RepuPoint/foto/esci fuori casi',
+    title: 'Il mio RepuScore',
+    text: 'E\' un punteggio che misura il tuo senso civico. Il tuo obiettivo coniste '
+    + ' nel mantenerlo il più alto possibile, ma come?\n\n'
+    +' Semplicemente scattando un selfie mentre indossi la mascherina appena esci di casa: l\'intelligenza artificiale'
+    +' la riconoscerà e ti assegnerà dei RepuPoint.\n\nNon dimenticare di farlo'+
+     ' altrimenti il tuo RepuScore inizierà a scendere!',
     image: require('./assets/favicon.png'),
     backgroundColor: '#000',
   },
   {
     key: 's3',
-    title: 'Si inizia',
-    text: 'Attiva gps/ come fare photo',
+    title: 'Per iniziare',
+    text: 'Attiva la localizzazione e il servizio di Tracking dall\'App'
+    +' così da poter rilevare lo spostamento. Quando ti allontani ti arriverà '+
+    ' una notifica e, da quel momento, hai 15 minuti per scattare un selfie.\n\n'+
+    ' Ti consigliamo di scattare una foto con il viso centrato in cui si veda bene la mascherina e leggermente gli elastici.',
     image: require('./assets/favicon.png'),
     backgroundColor: '#000',
   },
@@ -86,13 +96,18 @@ export default class App extends Component {
   _renderItem = ({ item }) => {
     return (
       <View  style={styles.container}>
-        <Text style={styles.title} >{item.title}</Text>
-        <MaterialIcons name="coronavirus" size={70} color="white" />
-        <Text style={styles.descr}>{item.text}</Text>
-        <FontAwesome5 name="shield-virus" size={70} color="white" />
-        <Text style={styles.descr}>{item.text}</Text>
-        <FontAwesome5 name="lungs-virus" size={70} color="white" />
-        <Text style={styles.descr}>{item.text}</Text>
+        <View  style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Text style={styles.title} >{item.title}</Text>
+        </View>
+
+        <View style={{flex: 5}}>
+          <View style={styles.SpiegazioneItem}>
+          <FontAwesome5 name="shield-virus" size={50} color="white" />
+          <Text style={styles.descr}>{item.text}</Text>
+          <FontAwesome5 name="lungs-virus" size={50} color="white" />
+          </View>
+
+        </View>
       </View>
     );
   }
@@ -174,16 +189,29 @@ const styles = StyleSheet.create({
 
 
   title: {
-   fontSize: 40,
+   fontSize: 30,
    padding: 5,
     color: '#e3dfc8',
    fontFamily: 'monospace',
    fontWeight: 'bold',
   },
 
+  SpiegazioneItem:{
+    margin: '3%',
+    padding: '5%',
+    width: '90%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(0, 0, 0, .2)' ,
+    borderRadius: 20,
+  },
+
+
   descr: {
-    padding: 10,
-    fontSize: 20,
+    padding: '10%',
+    margin: '5%',
+    fontSize: 17,
    fontFamily: 'monospace',
     textAlign: "center",
   },
