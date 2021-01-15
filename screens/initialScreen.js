@@ -221,8 +221,7 @@ export default class initialScreen extends React.Component {
 
 
    getNumMask = async () => {
-/*
-		 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=i5ButKgFMGFpYHfr6TR1tgRq6ImTMAJH1Tv7j9K8CPoqvFhpggvRsw=='
+		 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=Hg38R93G5TWiarjZ/K79vbv1bamx76kcWZByURgQa311BCtmWiEyrg=='
      const response = await fetch(url)
      .then((response) => response.text())
       .then((numMascherine) => {
@@ -231,7 +230,7 @@ export default class initialScreen extends React.Component {
         this.setState({
             numMasks: numMascherine
           });
-      })*/
+      })
    };
 
 

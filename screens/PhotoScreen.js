@@ -42,7 +42,7 @@ export default function PhotoScreen(props) {
 
 
 snap = async () => {
-  let options = { quality: 0.7};
+  let options = { quality: 0.4};
   if (this.camera) {
     let photo = await this.camera.takePictureAsync(options).then(data => {
                     console.log('data uri:' + data.uri);
@@ -66,16 +66,16 @@ upload = async () => {
   let i = 0
   const intervalId = setInterval(async () => {
     let risp = await polling();
-    if (risp == 200 || risp == 201 || i > 15) { //ancora non è pronto
+    if (risp == 200 || risp == 201) { //ancora non è pronto
       if(risp == 200){
         Alert.alert('Mascherina non riconosciuta ... + 0 RepuPoint 😅 ');
         console.log("Mascherina non riconosciuta");
-        props.navigation.state.params.updateData("OK MASK");
+        props.navigation.state.params.updateData("NO MASK");
       }
       if(risp == 201){
         Alert.alert('Mascherina rilevata! +3 RepuPoints 🥳');
         console.log("Mascherina rilevata!");
-        props.navigation.state.params.updateData("NO MASK");
+        props.navigation.state.params.updateData("OK MASK");
         // Aumenta repuScore
         incrementRepuScore();
       };
@@ -85,19 +85,21 @@ upload = async () => {
 
     console.log("provo di nuovo a chiedere lo status..");
 
-    if(i == 15){
+    if(i >= 20){
       Alert.alert('Non riesco a ricevere una risposta dal server :(');
       console.log("Non riesco a connettermi al server ... 😑");
       props.navigation.state.params.updateData("Error");
+      clearInterval(intervalId);
+      return;
     }
     i = i + 1;
-  }, 1500);
+  }, 2000);
 
 };
 
 
 polling = async () => {
-  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=g8N5MvDvtVpaSiwgrB1x/87MsgJCq6uVTCqY1XFg4htF7lT8EQPaNA=='
+  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=1seikraFp0DUgIbF7g8il6yP42Wbut5B4hv37fkJf7vBidbW12X8aA=='
   const response = await fetch(query, {method: "GET"});
   return response.status;
 };
