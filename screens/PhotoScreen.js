@@ -66,11 +66,12 @@ upload = async () => {
   let i = 0
   const intervalId = setInterval(async () => {
     let risp = await polling();
-    if (risp == 200 || risp == 201) { //ancora non è pronto
       if(risp == 200){
         Alert.alert('Mascherina non riconosciuta ... + 0 RepuPoint 😅 ');
         console.log("Mascherina non riconosciuta");
         props.navigation.state.params.updateData("NO MASK");
+        clearInterval(intervalId);
+        return;
       }
       if(risp == 201){
         Alert.alert('Mascherina rilevata! +3 RepuPoints 🥳');
@@ -78,10 +79,10 @@ upload = async () => {
         props.navigation.state.params.updateData("OK MASK");
         // Aumenta repuScore
         incrementRepuScore();
+        clearInterval(intervalId);
+        return;
       };
-      clearInterval(intervalId);
-      return;
-    }
+
 
     console.log("provo di nuovo a chiedere lo status..");
 
@@ -99,7 +100,7 @@ upload = async () => {
 
 
 polling = async () => {
-  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=1seikraFp0DUgIbF7g8il6yP42Wbut5B4hv37fkJf7vBidbW12X8aA=='
+  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=iELag83WjKjES3MtgmiRTuN/UZBW1u9NLmXJm0ImwlVDfOTNQqmetw=='
   const response = await fetch(query, {method: "GET"});
   return response.status;
 };
