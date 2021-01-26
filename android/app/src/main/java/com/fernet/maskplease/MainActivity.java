@@ -1,6 +1,8 @@
 package com.fernet.maskplease;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -13,11 +15,20 @@ import expo.modules.splashscreen.SplashScreenImageResizeMode;
 public class MainActivity extends ReactActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+	  
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+		layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+		getWindow().setAttributes(layoutParams);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+	}	
+	
+	super.onCreate(savedInstanceState);
     // SplashScreen.show(...) has to be called after super.onCreate(...)
     // Below line is handled by '@expo/configure-splash-screen' command and it's discouraged to modify it manually
     SplashScreen.show(this, SplashScreenImageResizeMode.CONTAIN, ReactRootView.class, false);
-  }
+ }
 
 
     /**

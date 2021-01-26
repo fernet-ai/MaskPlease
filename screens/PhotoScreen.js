@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
   },
 
   TopView:{
+    paddingTop: '5%',
     width: '100%',
     flexDirection: 'column',
     alignItems: 'center',

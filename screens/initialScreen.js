@@ -327,13 +327,42 @@ getDevelopProject = async () => {
            </View>
         </View >
 
-        {/* VIEW GPS */}
+
+				{/*View posizione casa*/}
+				<View style={{
+						width: '90%',
+						flexDirection: 'column',
+						alignItems: 'center',
+						justifyContent: 'center',
+						flex: 2,
+						backgroundColor:'rgba(0, 0, 0, .2)' ,
+						borderRadius: 20,
+						marginBottom: '5%',
+					}}>
+					<View style={{
+						width: '100%',
+						flexDirection: 'row',
+						alignItems: 'center',
+						justifyContent: 'space-around',
+						}}>
+						<Text>Posizione di casa</Text>
+							<TouchableOpacity>
+								<LinearGradient style={styles.roundButton} colors={["#8d6cae", "#9b46ae"]}>
+									<AntDesign name="home" size={18} color="black" />
+								</LinearGradient>
+							</TouchableOpacity>
+					</View>
+				</View >
+
+
+
+				{/* VIEW GPS */}
         <View style={{
             width: '90%',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            flex: 3,
+            flex: 7,
             backgroundColor: this.state.GPSattivo? 'rgba(0, 0, 0, .2)' : 'rgba(255, 0, 0, .2)' ,
             borderRadius: 20,
           }}>
@@ -361,18 +390,10 @@ getDevelopProject = async () => {
         </View >
 
 
+
         <View style={styles.FunctionView}>
 
-          <View style={{
-            height: '80%',
-            width: '48%',
-            backgroundColor: 'rgba(0, 0, 0, .2)',
-            borderRadius: 20,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            }}>
-
+          <View style= {styles.itemFunctionView} >
             <Text style={styles.descr}>RepuScore</Text>
             <View style={styles.buttonCircle}>
               <Text style={styles.RepuScore}>{this.state.repuScore}%</Text>
@@ -380,15 +401,7 @@ getDevelopProject = async () => {
             </View>
           </View>
 
-          <TouchableOpacity onPress={this.state.photoScreenBlocked? this.nonPuoiAprire : this.goPhotoScreen}  style={{
-            height: '80%',
-            width: '48%',
-            backgroundColor: 'rgba(0, 0, 0, .2)',
-            borderRadius: 20,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            }}>
+          <TouchableOpacity onPress={this.state.photoScreenBlocked? this.nonPuoiAprire : this.goPhotoScreen}  style={styles.itemFunctionView}>
             <View style={{flexDirection: 'row'}}>
               <FontAwesome5 style={{padding: 5}} name="head-side-mask" size={50} color="white" />
               <FontAwesome style={{padding: 5}} name="arrow-up" size={50} color={this.state.photoScreenBlocked? 'rgba(0, 0, 0, .2)': "green"} />
@@ -422,6 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#156CAE',
     alignItems: 'center',
     justifyContent: 'center',
+		paddingTop: '5%',
   },
 
   gradientContainer: {
@@ -438,7 +452,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      flex: 2,
+      flex: 3,
       //backgroundColor: 'yellow',
     },
 
@@ -448,14 +462,25 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      flex: 4,
+      flex: 7,
+			margin: '5%',
     },
 
+		itemFunctionView:{
+			height: '100%',
+			width: '48%',
+			backgroundColor: 'rgba(0, 0, 0, .2)',
+			borderRadius: 20,
+			flexDirection: 'column',
+			alignItems: 'center',
+			justifyContent: 'space-around',
+
+		},
 
     BottomView:{
       width:'100%',
       alignItems: 'center',
-      flex: 1,
+      flex: 2,
       backgroundColor: '#8d6cae',
        borderTopLeftRadius: 60,
        borderTopRightRadius: 60,
@@ -485,5 +510,13 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       padding: 5,
     },
+
+		roundButton: {
+			justifyContent: 'center',
+			alignItems: 'center',
+			padding: 10,
+			borderRadius: 100,
+			backgroundColor: '#8d6cae',
+		},
 
 });

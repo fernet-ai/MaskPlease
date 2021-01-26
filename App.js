@@ -45,7 +45,7 @@ const slides = [
   {
     key: 's1',
     title: 'Enjoy Maskplease!',
-    text: 'L\'idea nasce al fine di tutelare la propria salute in'+
+    text: 'L\'idea nasce al fine di tutelare la salute pubblica in'+
     ' periodo di pandemia, invogliando l\'utente al rispetto delle norme in vigore '+
     ' come indossare la mascherina fuori casa.\n\n'+
     'Gli obiettivi di MaskPlease vogliono rimarcare uno stampo ludico, competitivo, senza nulla togliere alla serietà delle predisposizioni pandemiche.',
@@ -56,7 +56,7 @@ const slides = [
     key: 's2',
     title: 'Il mio RepuScore',
     text: 'E\' un punteggio che misura il tuo senso civico. Il tuo obiettivo consiste '
-    + ' nel mantenerlo il più alto possibile, ma come?\n\n'
+    + ' nel mantenerlo il più alto possibile, come?\n\n'
     +' Semplicemente scattando un selfie mentre indossi la mascherina appena esci di casa: l\'intelligenza artificiale'
     +' la riconoscerà e ti assegnerà dei RepuPoint.\n\nNon dimenticare di farlo'+
      ' altrimenti il tuo RepuScore inizierà a scendere!',
