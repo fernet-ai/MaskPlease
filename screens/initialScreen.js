@@ -23,6 +23,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
     return;
   }
 
+
 	if (eventType === LocationGeofencingEventType.Enter) {
 		console.log("Sei a casa:", region);
 		await Notifications.scheduleNotificationAsync({
@@ -90,13 +91,17 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
       }
 
 			//Calcolo posizione di casa
-			let { coords } = await Location.getCurrentPositionAsync({});
-      // Set geofencing su casa
-			await Location.startGeofencingAsync(REGION_FETCH_TASK, [{
-				latitude:  coords.latitude,
-				longitude:  coords.longitude,
-				radius: 100,
-					}]);
+			//let { coords } = await Location.getCurrentPositionAsync({});
+			 let Coords = await AsyncStorage.getItem("CoordHome");
+			 let coords = JSON.parse(Coords);
+			 if(coords == null) return;
+			 console.log("al geofencing: "+coords.latitude+ " "+ coords.longitude);
+				// Set geofencing su casa
+			  Location.startGeofencingAsync(REGION_FETCH_TASK, [{
+					latitude:  coords.latitude,
+					longitude:  coords.longitude,
+					radius: 100,
+				}]);
       }
 
     };
@@ -122,6 +127,8 @@ export default class initialScreen extends React.Component {
 
 
     state = {
+			latitude: "?",
+			longitude: "?",
       serviceON: false,
       GPSattivo: false,
       repuScore: 0,
@@ -137,8 +144,13 @@ export default class initialScreen extends React.Component {
       this.getNumMask();
       //Ecco il repuScore
       this.loadRepuscore();
-      // Set scemarop di penalità
-      this.setPenality();
+
+			//Load posizione di casa
+			this.loadPositionHome();
+
+			// Set scemarop di penalità
+			this.setPenality();
+
     });
 
     // Listener quando apro sulla notifica
@@ -205,8 +217,6 @@ export default class initialScreen extends React.Component {
         return 0; // Penalità 0
     }
     else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;   this.decrementRepuScore(1); return -1;}
-    else if(tempoTrascorso > 120 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;  this.decrementRepuScore(2); return -2;} //NON VA
-    else if(tempoTrascorso > 200 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;  this.decrementRepuScore(3); return -3;} // NON VA
     return -999;
    }
 
@@ -219,9 +229,17 @@ export default class initialScreen extends React.Component {
     });
    }
 
+	 loadPositionHome = async () => {
+		 AsyncStorage.getItem("CoordHome").then((Coords) => {
+			 let coords = JSON.parse(Coords);
+			 if(coords == null) return;
+			 this.setState({latitude: coords.latitude, longitude: coords.longitude });});
+		};
+
+
 
    getNumMask = async () => {
-		 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=1k6XbH8kKv17KTjjc79P350qo1w1Y99okTvuKQy8K9qJcW6wFY4qqQ=='
+	/*	 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=1k6XbH8kKv17KTjjc79P350qo1w1Y99okTvuKQy8K9qJcW6wFY4qqQ=='
      const response = await fetch(url)
      .then((response) => response.text())
       .then((numMascherine) => {
@@ -230,7 +248,7 @@ export default class initialScreen extends React.Component {
         this.setState({
             numMasks: numMascherine
           });
-      })
+      })*/
    };
 
 
@@ -257,6 +275,39 @@ export default class initialScreen extends React.Component {
 
 
 
+
+   calPositionHome = async() => {
+		 //Calcolo posizione di casa
+		 const locationPermission = await Permissions.askAsync(Permissions.LOCATION);
+		 if (locationPermission.status === "granted"){
+			 Alert.alert('Calcolo posizione di casa 🏠','Sei sicuro? Ricalcolare la posizione ti costerà 20 RepuPoint!',
+	      [{
+	          text: 'Si',
+	          onPress: async() => {
+							let { coords } =  await Location.getCurrentPositionAsync({});
+							 this.setState({
+								 latitude: coords.latitude,
+								 longitude: coords.longitude
+							  });
+								console.log("posizione di casa: "+coords.latitude+" "+coords.longitude);
+								AsyncStorage.setItem("CoordHome", JSON.stringify(coords));
+								this.decrementRepuScore(20);
+								await this.turnOFFtracking();
+								await this.turnONtracking();
+
+						}
+	        },
+	        {
+	          text: 'Annulla',},
+	      ],
+	      {cancelable: false},
+	    	);
+				}
+			else{
+				Alert.alert("E' necessario attivare i permessi di locazione per calcolare una nuova posizione di casa 🏠");
+			}
+ 	}
+
   turnOFFtracking= () => {
     if(this.state.serviceON){
       this.setState({
@@ -265,6 +316,10 @@ export default class initialScreen extends React.Component {
   }
 
   turnONtracking= () => {
+		if(this.state.longitude == "?" || this.state.latitude== "?"){
+		 Alert.alert("Prima di attivare il tracking, calcola la posizione di casa dal menu in alto!");
+		 return;
+	  }
     if(!this.state.serviceON){
       this.setState({
             serviceON: true}, () => {initBackgroundFetch();});
@@ -345,8 +400,12 @@ getDevelopProject = async () => {
 						alignItems: 'center',
 						justifyContent: 'space-around',
 						}}>
-						<Text>Posizione di casa</Text>
-							<TouchableOpacity>
+
+						<View >
+							<Text>{this.state.longitude}</Text>
+							<Text>{this.state.latitude}</Text>
+						</View>
+							<TouchableOpacity onPress={this.calPositionHome} >
 								<LinearGradient style={styles.roundButton} colors={["#8d6cae", "#9b46ae"]}>
 									<AntDesign name="home" size={18} color="black" />
 								</LinearGradient>
