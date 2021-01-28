@@ -151,6 +151,9 @@ export default class initialScreen extends React.Component {
 			// Set scemarop di penalità
 			this.setPenality();
 
+			// carica l'ultimo stato del servizio di tracciamento
+			this.loadServiceState();
+
     });
 
     // Listener quando apro sulla notifica
@@ -183,6 +186,7 @@ export default class initialScreen extends React.Component {
    componentWillUnmount() {
      // Remove listener del numero di mascherine
      this.focusListener.remove();
+
    }
 
 
@@ -236,6 +240,13 @@ export default class initialScreen extends React.Component {
 			 this.setState({latitude: coords.latitude, longitude: coords.longitude });});
 		};
 
+		loadServiceState  = async () => {
+			let isEnabled = await AsyncStorage.getItem("ServiceState");
+			 console.log("Stato servizio: "+ isEnabled);
+				if(isEnabled == "true") this.setState({serviceON: true});
+			  else if(isEnabled == "false")  this.setState({serviceON: false});
+		 };
+
 
 
    getNumMask = async () => {
@@ -277,10 +288,14 @@ export default class initialScreen extends React.Component {
 
 
    calPositionHome = async() => {
+		 if(!this.state.GPSattivo){
+			 Alert.alert('Calcolo posizione di casa 🏠','Attivare prima il GPS!');
+			 return;
+		 	}
 		 //Calcolo posizione di casa
 		 const locationPermission = await Permissions.askAsync(Permissions.LOCATION);
 		 if (locationPermission.status === "granted"){
-			 Alert.alert('Calcolo posizione di casa 🏠','Sei sicuro? Ricalcolare la posizione ti costerà 20 RepuPoint!',
+			 Alert.alert('Calcolo posizione di casa 🏠','Sei sicuro? Ricalcolare la posizione ti costerà 10 RepuPoint!',
 	      [{
 	          text: 'Si',
 	          onPress: async() => {
@@ -291,7 +306,7 @@ export default class initialScreen extends React.Component {
 							  });
 								console.log("posizione di casa: "+coords.latitude+" "+coords.longitude);
 								AsyncStorage.setItem("CoordHome", JSON.stringify(coords));
-								this.decrementRepuScore(20);
+								this.decrementRepuScore(10);
 								await this.turnOFFtracking();
 								await this.turnONtracking();
 
@@ -304,25 +319,25 @@ export default class initialScreen extends React.Component {
 	    	);
 				}
 			else{
-				Alert.alert("E' necessario attivare i permessi di locazione per calcolare una nuova posizione di casa 🏠");
+				Alert.alert("Attenzione!", "E' necessario attivare i permessi di locazione per calcolare una nuova posizione di casa 🏠");
 			}
  	}
 
   turnOFFtracking= () => {
     if(this.state.serviceON){
-      this.setState({
-            serviceON: false}, () => {onDisableTask();});
+      this.setState({serviceON: false}, () => {onDisableTask();});
+			AsyncStorage.setItem("ServiceState", "false");
     }
   }
 
   turnONtracking= () => {
 		if(this.state.longitude == "?" || this.state.latitude== "?"){
-		 Alert.alert("Prima di attivare il tracking, calcola la posizione di casa dal menu in alto!");
+		 Alert.alert("Attenzione!","Prima di attivare il tracking, calcola la posizione di casa dal menu in alto!");
 		 return;
 	  }
     if(!this.state.serviceON){
-      this.setState({
-            serviceON: true}, () => {initBackgroundFetch();});
+      this.setState({serviceON: true}, () => {initBackgroundFetch();});
+			AsyncStorage.setItem("ServiceState", "true");
     }
   }
 
