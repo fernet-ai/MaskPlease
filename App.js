@@ -150,6 +150,8 @@ export default class App extends Component {
       AsyncStorage.setItem("RepuScore", "50");
       //Allora devo salvare il fatto che ho visto il tutorial
       AsyncStorage.setItem("TutorialVisto", "visto");
+      //inizializza DataUscita
+      AsyncStorage.setItem("DataUscita", "null");
 
     } catch (error) {
       console.log("Non riesco a salvare lo stato in modo persistente", error);

@@ -14,7 +14,7 @@ import logo from '../assets/logo.png';
 
 const REGION_FETCH_TASK = "upload-job-task-with-location";
 
-var DataUscita = undefined;
+//var DataUscita = undefined;
 
 TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, error }) => {
 
@@ -22,6 +22,9 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 		console.log("E' capitato qualche errore");
     return;
   }
+
+
+	let DataUscita = await  AsyncStorage.getItem("DataUscita");
 
 
 	if (eventType === LocationGeofencingEventType.Enter) {
@@ -37,7 +40,9 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 			channelId: 'tomove',
 			},
 		});
-		if(DataUscita != null) 	DataUscita = undefined;
+		if(DataUscita != "null"){
+			AsyncStorage.setItem("DataUscita", "null");
+		}
 	}
 
 	else if (eventType === LocationGeofencingEventType.Exit) {
@@ -53,7 +58,9 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 			channelId: 'tomove',
 			},
 		});
-		if(DataUscita == null)	DataUscita = new Date();
+		if(DataUscita == "null"){
+			 AsyncStorage.setItem("DataUscita", new Date().toString());
+		}
 }
 });
 
@@ -205,7 +212,8 @@ export default class initialScreen extends React.Component {
 
    setPenality = async () =>{
      console.log("Calcolo penalità ...");
-
+		 	let DataUscitaString = await  AsyncStorage.getItem("DataUscita");
+			let DataUscita = new Date(DataUscitaString);
 		 // Sei a casa, non puoi farti la foto
 		 if(DataUscita == null) {
 				this.setState({photoScreenBlocked: true});
@@ -220,7 +228,7 @@ export default class initialScreen extends React.Component {
         this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto da home
         return 0; // Penalità 0
     }
-    else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true}); DataUscita = undefined;   this.decrementRepuScore(1); return -1;}
+    else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true}); await	AsyncStorage.setItem("DataUscita", "null");   this.decrementRepuScore(1); return -1;}
     return -999;
    }
 
@@ -281,7 +289,7 @@ export default class initialScreen extends React.Component {
 
 	esitoMask = data => {
 	  console.log("Esito del riconoscimento: "+data);
-		if(data == "OK MASK" || data == "NO MASK" ||  data == "Error" ) DataUscita = undefined;
+		if(data == "OK MASK" || data == "NO MASK" ||  data == "Error" ) AsyncStorage.setItem("DataUscita", "null");
 }
 
 
