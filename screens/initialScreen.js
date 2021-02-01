@@ -213,13 +213,14 @@ export default class initialScreen extends React.Component {
    setPenality = async () =>{
      console.log("Calcolo penalità ...");
 		 	let DataUscitaString = await  AsyncStorage.getItem("DataUscita");
-			let DataUscita = new Date(DataUscitaString);
+
 		 // Sei a casa, non puoi farti la foto
-		 if(DataUscita == null) {
+		 if(DataUscitaString == "null") {
 				this.setState({photoScreenBlocked: true});
 				return -999;
 	 		}
 
+		 let DataUscita = new Date(DataUscitaString);
 		 let  now = new Date();
 		 let tempoTrascorso = (now - DataUscita) / 1000;
 		 console.log("Son trascorsi "+tempoTrascorso+" da quando sei uscito");
@@ -258,7 +259,7 @@ export default class initialScreen extends React.Component {
 
 
    getNumMask = async () => {
-	/*	 let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=1k6XbH8kKv17KTjjc79P350qo1w1Y99okTvuKQy8K9qJcW6wFY4qqQ=='
+	let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=1k6XbH8kKv17KTjjc79P350qo1w1Y99okTvuKQy8K9qJcW6wFY4qqQ=='
      const response = await fetch(url)
      .then((response) => response.text())
       .then((numMascherine) => {
@@ -267,7 +268,7 @@ export default class initialScreen extends React.Component {
         this.setState({
             numMasks: numMascherine
           });
-      })*/
+      })
    };
 
 

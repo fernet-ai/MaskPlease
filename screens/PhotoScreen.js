@@ -66,14 +66,15 @@ upload = async () => {
   let i = 0
   const intervalId = setInterval(async () => {
     let risp = await polling();
-      if(risp == 200){
+    console.log("RIsposta: "+risp);
+      if(risp == 250){
         Alert.alert('Mascherina non riconosciuta ... + 0 RepuPoint 😅 ');
         console.log("Mascherina non riconosciuta");
         props.navigation.state.params.updateData("NO MASK");
         clearInterval(intervalId);
         return;
       }
-      if(risp == 201){
+      if(risp == 251){
         Alert.alert('Mascherina rilevata! +3 RepuPoints 🥳');
         console.log("Mascherina rilevata!");
         props.navigation.state.params.updateData("OK MASK");
