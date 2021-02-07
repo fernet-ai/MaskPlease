@@ -11,14 +11,12 @@ export default class InfoScreen extends React.Component {
 
 
 
-  async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
-
-   }
+  async componentDidMount(){ }
 
 
 
    setNewValue= (value) => {
-      console.log("ecco il nuovo valore: "+ value);
+      console.log("Nuovo valore: "+ value);
    }
 
 
@@ -42,14 +40,14 @@ export default class InfoScreen extends React.Component {
           <Text style ={styles.quest}>Come posso aumentare il mio RepuScore?</Text>
           <Text style ={styles.answer}>
             Puoi ottenere RepuPoint se, uscendo di casa,
-            viene scattato una selfie con la mascherina indossata entro 30 minuti.
+            viene scattato una selfie con la mascherina indossata entro 15 minuti.
             Il menu Photo sarò sbloccato solamente quando vi è un effettivo spostamento:
             in tal caso potrai accedervi con un Tap dalla scheramata principale o
             alternativamente pigiando la notifica di avviso appena apparsa.
           </Text>
         </View>
         <View style ={styles.faqItem}>
-          <Text style ={styles.quest}>Cosa succede se non scatto la foto entro 30 minuti?</Text>
+          <Text style ={styles.quest}>Cosa succede se non scatto la foto entro 15 minuti?</Text>
           <Text style ={styles.answer}>Verrà sottratto un RepuPoint dal tuo RepuScore.</Text>
         </View>
         <View style ={styles.faqItem}>
@@ -65,17 +63,16 @@ export default class InfoScreen extends React.Component {
             Può accadere ciò nei seguenti scenari:{'\n'}
             - Non hai dato i permessi per la posizione {'\n'}
             - Hai il GPS spento {'\n'}
-            - Hai chiuso completamente l' App {'\n'}
+            - Il sistema operativo non permette processi in background {'\n'}
             - Non hai una versione di Android 10 o superiore sul tuo smarphone.
           </Text>
         </View>
         <View style ={styles.faqItem}>
           <Text style ={styles.quest}>Come faccio a cambiare posizione di casa?</Text>
           <Text style ={styles.answer}>
-            Nel momento in cui si attiva il servizio di Tracking, l' App
+            Facendo Tap sull'icona 🏠 dal meno in alto, l' App
             calcola la posizione di casa (con un diametro di 100 metri dal punto ottenuto).
-            Per tal motivo, per ripristinare una nuova posizione di checkpoint è necessario
-            attivare e disattivare il servizio di Tracking.
+            Ricorda che cambiare la tua posizione ti costerà 10 RepuPoint!
           </Text>
         </View>
       </ScrollView>

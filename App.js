@@ -48,7 +48,7 @@ const slides = [
     text: 'L\'idea nasce al fine di tutelare la salute pubblica in'+
     ' periodo di pandemia, invogliando l\'utente al rispetto delle norme in vigore '+
     ' come indossare la mascherina fuori casa.\n\n'+
-    'Gli obiettivi di MaskPlease vogliono rimarcare uno stampo ludico, competitivo, senza nulla togliere alla serietà delle predisposizioni pandemiche.',
+    'Gli obiettivi di MaskPlease tendono ad uno stampo ludico, competitivo, senza nulla togliere alla serietà delle predisposizioni pandemiche.',
     image: require('./assets/favicon.png'),
     backgroundColor: '#000',
   },
@@ -66,10 +66,10 @@ const slides = [
   {
     key: 's3',
     title: 'Per iniziare',
-    text: 'Attiva la localizzazione e il servizio di Tracking dall\'App'
-    +' così da poter rilevare lo spostamento. Quando ti allontani ti arriverà '+
+    text: 'Assicurati di avere il GPS attivo, poi calcola una nuova posizione di casa e avvia il servizio di Tracking dall\'App'
+    +' così da poter rilevare lo spostamento.\n\n Quando ti allontani arriverà '+
     ' una notifica e, da quel momento, hai 15 minuti per scattare un selfie.\n\n'+
-    ' Ti consigliamo di scattare una foto con il viso centrato in cui si veda bene la mascherina e possibilmente anche gli elastici.',
+    'Enjoy MaskPlease!',
     image: require('./assets/favicon.png'),
     backgroundColor: '#000',
   },

@@ -112,7 +112,7 @@ incrementRepuScore = async () => {
   console.log("incremento punti reputazione ..");
   let OldScore = await AsyncStorage.getItem("RepuScore");
   let newScore = parseInt(OldScore) + 3;
-  if(newScore > 100) newScore = 100; // Limite massimo
+  if(newScore > 100) newScore = 100;  // Limite massimo
   console.log("Nuovo score: "+ newScore);
   AsyncStorage.setItem("RepuScore", String(newScore));
 

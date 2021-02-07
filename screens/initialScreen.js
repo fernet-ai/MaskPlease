@@ -14,12 +14,11 @@ import logo from '../assets/logo.png';
 
 const REGION_FETCH_TASK = "upload-job-task-with-location";
 
-//var DataUscita = undefined;
 
 TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, error }) => {
 
 	if (error) {
-		console.log("E' capitato qualche errore");
+		console.log("Si è verificato un errore");
     return;
   }
 
@@ -67,7 +66,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 
   const initBackgroundFetch = async () => {
-      console.log("chiamo initBackgroundFetch()");
+      console.log("initBackgroundFetch()");
 
 
       const locationPermission = await Permissions.askAsync(Permissions.LOCATION);
@@ -84,9 +83,10 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 
         Notifications.setNotificationChannelAsync('tomove', {
-			  name: 'E-mail notifications',
-			  importance: Notifications.AndroidImportance.HIGH,
-			  sound: 'email-sound.wav',
+			  name: 'notifications',
+				importance: Notifications.AndroidImportance.MAX,
+	      vibrationPattern: [0, 250, 250, 250],
+	      lightColor: '#156CAE',
 			});
 
 
@@ -97,7 +97,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
         console.log("Background Fetch Task not found - Registrazione nuova attivita ...");
       }
 
-			//Calcolo posizione di casa
+			//Calcolo alternativo posizione di casa
 			//let { coords } = await Location.getCurrentPositionAsync({});
 			 let Coords = await AsyncStorage.getItem("CoordHome");
 			 let coords = JSON.parse(Coords);
@@ -144,26 +144,25 @@ export default class initialScreen extends React.Component {
     };
 
 
-  async componentDidMount(){ //Chiamato quando ha finito di renderizzare i componenti
+  async componentDidMount(){
     const { navigation } = this.props;
+		await Permissions.askAsync(Permissions.LOCATION);
+
     this.focusListener = navigation.addListener("willFocus", () => {
       console.log("Get Numero mascherine!");
       this.getNumMask();
-      //Ecco il repuScore
+      //carica il repuScore
       this.loadRepuscore();
-
 			//Load posizione di casa
 			this.loadPositionHome();
-
 			// Set scemarop di penalità
 			this.setPenality();
-
 			// carica l'ultimo stato del servizio di tracciamento
 			this.loadServiceState();
 
     });
 
-    // Listener quando apro sulla notifica
+    // Listener apertura sulla notifica
      Notifications.addNotificationResponseReceivedListener(response => {
 			 this.goPhotoScreen();
     });
@@ -173,10 +172,9 @@ export default class initialScreen extends React.Component {
 
     let BackgroundServicesEnabled = await TaskManager.isAvailableAsync();
       if (!BackgroundServicesEnabled) {
-        Alert.alert('Qui non posso attivare il background');
+        Alert.alert('Non riesco ad attivare servizi in background');
       }
    }
-
 
 
 
@@ -259,16 +257,16 @@ export default class initialScreen extends React.Component {
 
 
    getNumMask = async () => {
-	let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=1k6XbH8kKv17KTjjc79P350qo1w1Y99okTvuKQy8K9qJcW6wFY4qqQ=='
-     const response = await fetch(url)
-     .then((response) => response.text())
-      .then((numMascherine) => {
-        //Se il server e' spento può dare problemi
-        console.log("Numero mascherine "+ numMascherine );
-        this.setState({
-            numMasks: numMascherine
-          });
-      })
+		let url = 'https://maskpleasefunc.azurewebsites.net/api/getNumMask?code=1k6XbH8kKv17KTjjc79P350qo1w1Y99okTvuKQy8K9qJcW6wFY4qqQ=='
+	     const response = await fetch(url)
+	     .then((response) => response.text())
+	      .then((numMascherine) => {
+	        //Se il server e' spento può dare problemi
+	        console.log("Numero mascherine "+ numMascherine );
+	        this.setState({
+	            numMasks: numMascherine
+	          });
+	      })
    };
 
 
@@ -341,7 +339,7 @@ export default class initialScreen extends React.Component {
 
   turnONtracking= () => {
 		if(this.state.longitude == "?" || this.state.latitude== "?"){
-		 Alert.alert("Attenzione!","Prima di attivare il tracking, calcola la posizione di casa dal menu in alto!");
+		 Alert.alert("Aspetta!","Prima di attivare il tracking, calcola la posizione di casa dal menu in alto! 🏠");
 		 return;
 	  }
     if(!this.state.serviceON){
@@ -370,6 +368,13 @@ getDevelopProject = async () => {
 )
 }
 
+viewNumMask = async() => {
+	Alert.alert(
+    ""+this.state.numMasks+" 😷",
+  ""+this.state.numMasks+" mascherine indossate oggi dagli utenti di MaskPlease"
+)
+}
+
 
   renderEmoji(){
      if(this.state.repuScore < 20) return <Ionicons name="sad" size={60} color="yellow" />
@@ -394,7 +399,7 @@ getDevelopProject = async () => {
 
         <View style={styles.TopView}>
            <Image source={logo} style={{ width: '65%', height: '45%' }} />
-           <View style={{
+           <TouchableOpacity   onPress={this.viewNumMask} style={{
                flexDirection: 'row',
                backgroundColor: 'rgba(0, 0, 0, .2)',
                borderRadius: 80,
@@ -403,7 +408,7 @@ getDevelopProject = async () => {
              }}>
              <Text style={{fontSize: 20, fontWeight: 'bold',  fontFamily: 'monospace', padding: 5}}>{this.state.numMasks}</Text>
              <MaterialIcons  style={{padding:5}} name="masks" size={30} color="white" />
-           </View>
+           </TouchableOpacity>
         </View >
 
 
@@ -426,8 +431,8 @@ getDevelopProject = async () => {
 						}}>
 
 						<View >
-							<Text>{this.state.longitude}</Text>
-							<Text>{this.state.latitude}</Text>
+							<Text style={{fontStyle: 'italic', color: 'black', fontFamily: 'monospace', 	fontSize: 14, textAlign: "left",}}>Longitudine: {this.state.longitude}</Text>
+							<Text style={{fontStyle: 'italic', color: 'black', fontFamily: 'monospace', 	fontSize: 14, textAlign: "left",}}>Latitudine : {this.state.latitude}</Text>
 						</View>
 							<TouchableOpacity onPress={this.calPositionHome} >
 								<LinearGradient style={styles.roundButton} colors={["#8d6cae", "#9b46ae"]}>
@@ -536,7 +541,6 @@ const styles = StyleSheet.create({
       justifyContent: 'space-between',
       alignItems: 'center',
       flex: 3,
-      //backgroundColor: 'yellow',
     },
 
 
