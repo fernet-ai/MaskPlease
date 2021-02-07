@@ -16,9 +16,9 @@ export default function PhotoScreen(props) {
 
   useEffect(() => {
       EAzureBlobStorageImage.configure(
-    "maskpleasestorage", //Account Name
-    "asBWW61XzSADiBm+ePs0R92ouRXReni5YoDLjvanrRTn2IZbmbtNvJUsv3BmmJF+9v+W0VHg7EsnKwtpzuy4ag==", //Account Key
-    "maskpleasecontainer" //Container Name
+    "", //Account Name
+    "", //Account Key
+    "" //Container Name
   );
 
   }, []);
@@ -101,7 +101,7 @@ upload = async () => {
 
 
 polling = async () => {
-  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=iELag83WjKjES3MtgmiRTuN/UZBW1u9NLmXJm0ImwlVDfOTNQqmetw=='
+  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=' // Aggiungere Key
   const response = await fetch(query, {method: "GET"});
   return response.status;
 };
