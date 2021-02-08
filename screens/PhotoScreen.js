@@ -16,9 +16,9 @@ export default function PhotoScreen(props) {
 
   useEffect(() => {
       EAzureBlobStorageImage.configure(
-    "", //Account Name
-    "", //Account Key
-    "" //Container Name
+    "",   //Account Name
+    "",  //Account Key
+    ""  //Container Name
   );
 
   }, []);
@@ -45,7 +45,6 @@ snap = async () => {
   let options = { quality: 0.4};
   if (this.camera) {
     let photo = await this.camera.takePictureAsync(options).then(data => {
-                    console.log('data uri:' + data.uri);
                     setNewUri(data.uri);
                   });
   }
@@ -59,14 +58,12 @@ upload = async () => {
   setCommAzure(true);
 
   var nomeFile = await EAzureBlobStorageImage.uploadFile(UriImg);
-  console.log("Nome azure del file caricato: "+nomeFile);
   setToken(nomeFile);
 
-  // Avvia poling ogni 1,5 secondi fino a 15 volte max
+  // polling ogni 1,5 secondi x 15 volte
   let i = 0
   const intervalId = setInterval(async () => {
     let risp = await polling();
-    console.log("RIsposta: "+risp);
       if(risp == 250){
         Alert.alert('Mascherina non riconosciuta ... + 0 RepuPoint 😅 ');
         console.log("Mascherina non riconosciuta");
@@ -78,18 +75,13 @@ upload = async () => {
         Alert.alert('Mascherina rilevata! +3 RepuPoints 🥳');
         console.log("Mascherina rilevata!");
         props.navigation.state.params.updateData("OK MASK");
-        // Aumenta repuScore
         incrementRepuScore();
         clearInterval(intervalId);
         return;
       };
 
-
-    console.log("provo di nuovo a chiedere lo status..");
-
     if(i >= 20){
-      Alert.alert('Non riesco a ricevere una risposta dal server :(');
-      console.log("Non riesco a connettermi al server ... 😑");
+      Alert.alert('Non riesco a ricevere una risposta dal server 😑');
       props.navigation.state.params.updateData("Error");
       clearInterval(intervalId);
       return;
@@ -101,19 +93,16 @@ upload = async () => {
 
 
 polling = async () => {
-  let query = 'https://maskpleasefunc.azurewebsites.net/api/getStatus?idreq='+token+'&code=' // Aggiungere Key
+  let query = '' // endPoint con Key getStatus
   const response = await fetch(query, {method: "GET"});
   return response.status;
 };
 
 
-// Incrementa il RepuScore
 incrementRepuScore = async () => {
-  console.log("incremento punti reputazione ..");
   let OldScore = await AsyncStorage.getItem("RepuScore");
   let newScore = parseInt(OldScore) + 3;
-  if(newScore > 100) newScore = 100;  // Limite massimo
-  console.log("Nuovo score: "+ newScore);
+  if(newScore > 100) newScore = 100;
   AsyncStorage.setItem("RepuScore", String(newScore));
 
 };

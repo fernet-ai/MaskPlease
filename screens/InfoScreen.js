@@ -15,12 +15,6 @@ export default class InfoScreen extends React.Component {
 
 
 
-   setNewValue= (value) => {
-      console.log("Nuovo valore: "+ value);
-   }
-
-
-
   	render(){
 
 	  return (

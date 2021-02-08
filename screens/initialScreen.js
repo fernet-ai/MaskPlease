@@ -66,21 +66,12 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 
   const initBackgroundFetch = async () => {
-      console.log("initBackgroundFetch()");
-
-
       const locationPermission = await Permissions.askAsync(Permissions.LOCATION);
       const notificationPermission = await Permissions.askAsync(Permissions.USER_FACING_NOTIFICATIONS);
-
-      console.log("Stato permessi di locazione "+ locationPermission.status);
 
       if (locationPermission.status === "granted" && notificationPermission.status === "granted") {
 
         const registered = await TaskManager.isTaskRegisteredAsync(REGION_FETCH_TASK);
-        if (registered) {
-          console.log("registered");
-        }
-
 
         Notifications.setNotificationChannelAsync('tomove', {
 			  name: 'notifications',
@@ -91,19 +82,12 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 
       let isRegistered = await TaskManager.isTaskRegisteredAsync(REGION_FETCH_TASK);
-      if (isRegistered) {
-        console.log(`Task ${REGION_FETCH_TASK} Attivita registrata`);
-      } else {
-        console.log("Background Fetch Task not found - Registrazione nuova attivita ...");
-      }
 
-			//Calcolo alternativo posizione di casa
-			//let { coords } = await Location.getCurrentPositionAsync({});
 			 let Coords = await AsyncStorage.getItem("CoordHome");
 			 let coords = JSON.parse(Coords);
 			 if(coords == null) return;
-			 console.log("al geofencing: "+coords.latitude+ " "+ coords.longitude);
-				// Set geofencing su casa
+			 console.log("Geofencing: "+coords.latitude+ " "+ coords.longitude);
+
 			  Location.startGeofencingAsync(REGION_FETCH_TASK, [{
 					latitude:  coords.latitude,
 					longitude:  coords.longitude,
@@ -115,12 +99,10 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 
 
-  /*Disattiva Task*/
   const onDisableTask = async () => {
     const isRegisterd = await TaskManager.isTaskRegisteredAsync(REGION_FETCH_TASK );
     if (isRegisterd){
       await Location.stopGeofencingAsync(REGION_FETCH_TASK);
-      console.log("Stop geofencing ...");
     }
   };
 
@@ -149,20 +131,15 @@ export default class initialScreen extends React.Component {
 		await Permissions.askAsync(Permissions.LOCATION);
 
     this.focusListener = navigation.addListener("willFocus", () => {
-      console.log("Get Numero mascherine!");
       this.getNumMask();
-      //carica il repuScore
       this.loadRepuscore();
-			//Load posizione di casa
 			this.loadPositionHome();
-			// Set scemarop di penalità
 			this.setPenality();
-			// carica l'ultimo stato del servizio di tracciamento
 			this.loadServiceState();
 
     });
 
-    // Listener apertura sulla notifica
+
      Notifications.addNotificationResponseReceivedListener(response => {
 			 this.goPhotoScreen();
     });
@@ -179,7 +156,6 @@ export default class initialScreen extends React.Component {
 
 
    async componentDidUpdate(){
-     //Rileva costantemente se il GPS è attivo
      let servicesEnabled = await Location.hasServicesEnabledAsync();
      this.setState({GPSattivo: servicesEnabled}, () => {
        if(!servicesEnabled) this.turnOFFtracking();
@@ -189,30 +165,23 @@ export default class initialScreen extends React.Component {
 
 
    componentWillUnmount() {
-     // Remove listener del numero di mascherine
      this.focusListener.remove();
-
    }
 
 
 
-   // Decremrnta il RepuScore
    decrementRepuScore = async (punti) => {
-     console.log("decremento "+punti+" reputazione ..");
      let OldScore = await AsyncStorage.getItem("RepuScore");
      let newScore = parseInt(OldScore) - punti;
-     if(newScore < 0) newScore = 0; // Limite minimo
-     console.log("Nuovo score: "+ newScore);
+     if(newScore < 0) newScore = 0;
      AsyncStorage.setItem("RepuScore", String(newScore));
      this.loadRepuscore();
    };
 
 
    setPenality = async () =>{
-     console.log("Calcolo penalità ...");
 		 	let DataUscitaString = await  AsyncStorage.getItem("DataUscita");
 
-		 // Sei a casa, non puoi farti la foto
 		 if(DataUscitaString == "null") {
 				this.setState({photoScreenBlocked: true});
 				return -999;
@@ -221,11 +190,10 @@ export default class initialScreen extends React.Component {
 		 let DataUscita = new Date(DataUscitaString);
 		 let  now = new Date();
 		 let tempoTrascorso = (now - DataUscita) / 1000;
-		 console.log("Son trascorsi "+tempoTrascorso+" da quando sei uscito");
 
-    if(tempoTrascorso <= 60){ // Sei ancora in tempo x fare la foto
-        this.setState({photoScreenBlocked: false}); //Sblocca per fare la foto da home
-        return 0; // Penalità 0
+    if(tempoTrascorso <= 60){
+        this.setState({photoScreenBlocked: false});
+        return 0;
     }
     else if(tempoTrascorso > 60 ){ this.setState({photoScreenBlocked: true}); await	AsyncStorage.setItem("DataUscita", "null");   this.decrementRepuScore(1); return -1;}
     return -999;
@@ -235,7 +203,6 @@ export default class initialScreen extends React.Component {
 
    loadRepuscore = async () => {
        AsyncStorage.getItem("RepuScore").then((score) => {
-         console.log("Nuovo RepuScore aggiornato: "+ score);
          this.setState({repuScore: score});
     });
    }
@@ -249,7 +216,6 @@ export default class initialScreen extends React.Component {
 
 		loadServiceState  = async () => {
 			let isEnabled = await AsyncStorage.getItem("ServiceState");
-			 console.log("Stato servizio: "+ isEnabled);
 				if(isEnabled == "true") this.setState({serviceON: true});
 			  else if(isEnabled == "false")  this.setState({serviceON: false});
 		 };
@@ -261,8 +227,6 @@ export default class initialScreen extends React.Component {
 	     const response = await fetch(url)
 	     .then((response) => response.text())
 	      .then((numMascherine) => {
-	        //Se il server e' spento può dare problemi
-	        console.log("Numero mascherine "+ numMascherine );
 	        this.setState({
 	            numMasks: numMascherine
 	          });
@@ -276,7 +240,7 @@ export default class initialScreen extends React.Component {
 
   goPhotoScreen = () => {
 		this.setPenality().then((penality) => {
-			if(penality == 0) // se non hai ricevuto penalità e sei ancora in tempo ...
+			if(penality == 0)
 				this.props.navigation.navigate('Photo', {updateData: this.esitoMask});
 			else Alert.alert("Mi spiace, sei in ritardo ... 😪👎");
  });
@@ -287,7 +251,6 @@ export default class initialScreen extends React.Component {
 	}
 
 	esitoMask = data => {
-	  console.log("Esito del riconoscimento: "+data);
 		if(data == "OK MASK" || data == "NO MASK" ||  data == "Error" ) AsyncStorage.setItem("DataUscita", "null");
 }
 
@@ -311,7 +274,7 @@ export default class initialScreen extends React.Component {
 								 latitude: coords.latitude,
 								 longitude: coords.longitude
 							  });
-								console.log("posizione di casa: "+coords.latitude+" "+coords.longitude);
+								console.log("Posizione di casa: "+coords.latitude+" "+coords.longitude);
 								AsyncStorage.setItem("CoordHome", JSON.stringify(coords));
 								this.decrementRepuScore(10);
 								await this.turnOFFtracking();
@@ -412,7 +375,7 @@ viewNumMask = async() => {
         </View >
 
 
-				{/*View posizione casa*/}
+				{/*View posizione di casa*/}
 				<View style={{
 						width: '90%',
 						flexDirection: 'column',

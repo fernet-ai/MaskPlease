@@ -4,7 +4,6 @@ import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import { FontAwesome5, Fontisto, MaterialIcons  } from '@expo/vector-icons';
-
 import initialScreen from './screens/initialScreen';
 import photoScreen from './screens/PhotoScreen';
 import InfoScreen from './screens/InfoScreen';
@@ -112,7 +111,6 @@ export default class App extends Component {
         imgTwo = "hourglass-start";
         break;
       default:
-        console.log("Non trovo nessun item");
     }
 
     return (
@@ -145,12 +143,8 @@ export default class App extends Component {
   _onDone = () => {
     this.setState({ showRealApp: true });
     try {
-
-      //Inizializzo il RepuScore
       AsyncStorage.setItem("RepuScore", "50");
-      //Allora devo salvare il fatto che ho visto il tutorial
       AsyncStorage.setItem("TutorialVisto", "visto");
-      //inizializza DataUscita
       AsyncStorage.setItem("DataUscita", "null");
 
     } catch (error) {
