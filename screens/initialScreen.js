@@ -27,7 +27,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 
 
 	if (eventType === LocationGeofencingEventType.Enter) {
-		console.log("Sei a casa:", region);
+
 		await Notifications.scheduleNotificationAsync({
 			content: {
 			title: "Sei a casa 🏠",
@@ -45,7 +45,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 	}
 
 	else if (eventType === LocationGeofencingEventType.Exit) {
-		console.log("Sei uscito fuori casa:", region);
+
 		await Notifications.scheduleNotificationAsync({
 			content: {
 			title: "Hai messo la mascherina? 😷",
@@ -86,7 +86,7 @@ TaskManager.defineTask(REGION_FETCH_TASK, async ({ data: { eventType, region }, 
 			 let Coords = await AsyncStorage.getItem("CoordHome");
 			 let coords = JSON.parse(Coords);
 			 if(coords == null) return;
-			 console.log("Geofencing: "+coords.latitude+ " "+ coords.longitude);
+
 
 			  Location.startGeofencingAsync(REGION_FETCH_TASK, [{
 					latitude:  coords.latitude,
@@ -274,7 +274,7 @@ export default class initialScreen extends React.Component {
 								 latitude: coords.latitude,
 								 longitude: coords.longitude
 							  });
-								console.log("Posizione di casa: "+coords.latitude+" "+coords.longitude);
+								// Posizione di casa: coords.latitude, coords.longitude
 								AsyncStorage.setItem("CoordHome", JSON.stringify(coords));
 								this.decrementRepuScore(10);
 								await this.turnOFFtracking();
