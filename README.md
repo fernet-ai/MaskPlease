@@ -1,4 +1,6 @@
 # MaskPlease
+<p align="center"><img src="./img/Schermata Home.jpg" width="200"/></p>
+
 MaskPlease è un'applicazione Android ideata per la prevenzione al contagio da Covid-19, 
 adottando le logiche della Gamification. A tal proposito si introduce il concetto di RepuScore:
 è un punteggio che misura il tuo senso civico; il tuo obiettivo consiste nel mantenerlo il più alto possibile, ma come?
@@ -8,7 +10,7 @@ Il menu Photo sarò sbloccato solamente quando vi è un effettivo spostamento:
 in tal caso potrai accedervi con un Tap dalla scheramata principale o alternativamente pigiando 
 la notifica di avviso appena apparsa.
 
-<p align="center"><img src="./img/photo5837097972922430795.jpg" width="300"/></p>
+
 
 MaskPlease fornisce le seguenti funzionalità:
 
